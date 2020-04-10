@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Semicolon safaris</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        background: rgb(235, 240, 88);
+        background: radial-gradient(
+          circle at 80% 20%,
+          rgba(235, 240, 88, 0.3) 0%,
+          rgba(255, 255, 255, 0.3) 16%,
+          rgba(163, 234, 248, 0.45) 100%
+        );
+        /* background-size: 100vw 100vh; */
+        background-attachment: fixed;
+      }
+
+      body,
+      a {
+        color: rgb(34, 34, 34);
+        font-family: "'Baloo Da', cursive";
+        font-size: 16px;
+      }
+
+      a,
+      a:link,
+      a:visited,
+      a:focus,
+      a:hover,
+      a:active {
+        text-decoration: none;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .box {
+        display: none;
+        width: 100%;
+      }
+
+      a:hover + .box,
+      .box:hover {
+        display: block;
+        position: relative;
+        z-index: 100;
+      }
+
+      .jpcContainer {
+        display: flex;
+        flex-wrap: wrap;
+        /* margin: 5vw; */
+        justify-content: center;
+        align-items: center;
+
+        padding: 1rem 2rem;
+      }
+      .jpcCardFlex {
+       
+        flex: 1;
+        align-content: center;
+        padding: 1rem 0.5rem;
+        margin: 1rem;
+        max-width: 32vw;
+        min-width: 35rem;
+        border-radius: 0.4rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .jpcCardFlex:hover {
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+          0 10px 10px rgba(0, 0, 0, 0.22);
+      }
+      .jpcCardHeader {
+        display: flex;
+        flex-direction: row;
+      }
+      .jpcCardImg {
+        flex-shrink: 1;
+        padding: 0;
+      }
+      .jpcCardTitle {
+        padding-left: 1rem;
+        text-align: left;
+      }
+      .jpcCardImg img {
+        width: 64px;
+        height: 64px;
+        /* width: 100%; */
+      }
+      .jpcCardContent p {
+        margin: 1rem 1rem 0.5rem;
+        text-align: left;
+        font-size: smaller;
+      }
+      .jpcDefaultIcon {
+        width: 64px;
+        height: 64px;
+        background-image: url(jpc_icon_crystal64x64x13x1.png);
+      }
+      .jpcContent {
+        padding: 10px;
+      }
+
+      .gapTop {
+        margin-top: 30px;
+      }
+
+      .mesh128 {
+        width: 128px;
+        height: 128px;
+        background-image: url('../img/jpc_icon_crystal128x128x13x1.png');
+        -webkit-animation: playh 3s steps(12) infinite;
+        -webkit-animation-direction: alternate-reverse;
+        /* -webkit-transform: scale(.5, .5); */
+      }
+
+      .mesh64 {
+        width: 64px;
+        height: 64px;
+        background-image: url('../img/jpc_icon_crystal64x64x13x1.png');
+        -webkit-animation: playh 3s steps(12) infinite;
+        -webkit-animation-direction: alternate-reverse;
+        /* -webkit-transform: scale(.5, .5); */
+      }
+
+      @-webkit-keyframes playh {
+        0% {
+          background-position-x: 0px;
+        }
+
+        100% {
+          background-position-x: 100%;
+        }
+      }
+    </style>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+  </head>
+
+  <body>
+    <h1 title="code for fun" style="cursor:crosshair">
+      <div class="center">
+        <bold> Syntax Safaris in White Space</bold>
+      </div>
+    </h1>
+    <div class="center">
+      <h3>
+        <div style="display:inline-block;white-space:nowrap;margin-top:2rem">
+          <a
+            class="github-button"
+            href="https://github.com/johnpc123"
+            data-size="large"
+            aria-label="Follow @johnpc123 on GitHub"
+            >Follow @johnpc123</a
+          >
+        </div>
+      </h3>
+
+      <div
+        style="display:inline-block ;padding:3rem 3rem 0 3rem;text-align: left;max-width:60rem;text-justify:newspaper;"
+      >
+        <p>
+          The pace of computing demands constant renewal to stay current. Here I've stuck a pin in some projects to circle back to when time permits.                 
+        </p>
+        <div style="padding-left: 6rem;width:45rem;margin-top:3rem">
+          <div style="text-align: right">
+            <i
+              ><a href="https://hub.practicalcoder.com/connect" target="_blank"
+                >Link to my hub contact page</a
+              ></i
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="jpcContainer">
+        <a
+            href="https://oidc.practicalcoder.com/.well-known/openid-configuration"
+          >
+        <div class="jpcCardFlex">
+          
+            <div class="jpcCardHeader">
+              <div class="mesh64"></div>
+
+              <h4 class="jpcCardTitle">Web Identity Provider</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                A self hosted
+                <b>open id connect</b>
+
+                implementation designed for social web integration and to
+                provide digital sovereignty to clients.
+              </p>
+            </div>
+          
+        </div>
+      </a>
+        <a href="https://hub.practicalcoder.com/" target="_blank">
+        <div class="jpcCardFlex">
+         <div class="jpcCardInner">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/hub_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">Relay service hub</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                This hub supports full stack clients on their own servers
+                involving a
+                <b>relay server </b> with logon services for hub platform
+                clients. This boosts productivity by reducing the overhead of
+                developing access control admin.
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+<!--        <div class="jpcCardFlex">
+          <a href="https://prophet.practicalcoder.com/prophet" target="_blank">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/prophet_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">AWS hosted client</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                This AWS hosted client is the production runtime of a full stack
+                data analysis project from ~2015. A<b> live data chart </b> that
+                displays neural network prediction of time series as full stack
+                web application.
+              </p>
+            </div>
+          </a>
+        </div>
+
+
+        <div class="jpcCardFlex">
+          <a href="https://prophet.practicalcoder.com/monitor" target="_blank">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/monitor_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">Bespoke RESTful integration</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                A useful <b>third party</b> cpu and file system resource monitor
+                to diagnose server issues. Here as an example of
+                <b>RESTful</b> open ID connect <b>integration</b>.
+              </p>
+            </div>
+          </a>
+        </div>
+-->
+<a href="https://story.practicalcoder.com" target="_blank">
+
+<div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="mesh64"></div>
+
+              <h4 class="jpcCardTitle">Platform Client Template</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                A template for
+                <b> micro-service web interfaces.</b>
+                This RESTful full stack single page app is readily reproducible
+                to create new hub clients.
+              </p>
+            </div>
+        </div>
+      </a>
+
+        <!--
+        <div class="jpcCardFlex">
+          <a href="https://group.practicalcoder.com" target="_blank">
+            <div class="jpcCardHeader">
+              <div class="mesh64"></div>
+              <h4 class="jpcCardTitle">Traditional Web Client</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                Older Prototype (rPi)
+                <b> micro-service web interface.</b>
+                This client met my first design goal of combining hardware I/O
+                with social web access.
+              </p>
+            </div>
+          </a>
+        </div>
+--> 
+  <a href="https://practicalcoder.com/life.html" target="_blank">
+        <div class="jpcCardFlex">         
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/dhtml_life_icon.png"/>
+              </div>
+              <h4 class="jpcCardTitle">The Life Algorithm</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                John Conways<b> Life</b>
+                Cellular automation, dhtml ~2000
+              </p>
+            </div>         
+        </div>
+      </a>
+      <a href="https://practicalcoder.com/react-life/" target="_blank">
+      <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/react_life_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">More life with React</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                <b>… ~2018: </b>Single Page UI applicaton. React, Webpack UI
+                component based, ES6 transpiled, bundled.
+              </p>
+            </div>
+        </div>
+      </a>
+
+      <a href="https://corner.practicalcoder.com/impression.html" target="_blank">
+      <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/impression.png" />
+              </div>
+              <h4 class="jpcCardTitle">Secret key encryption</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                Researching the data encryption standard (DES) ~2000 made a
+                <b>
+                  stenographic impression
+                </b>
+              </p>
+            </div>
+        </div>
+      </a>
+
+      <a href="https://corner.practicalcoder.com/">
+      <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/spiral.png" />
+              </div>
+              <h4 class="jpcCardTitle">3D Corner</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                This
+                <b>spiral algorithm</b>
+                was originally developed with Borland C++ on a old 286 PC
+                Hercules green screen from first principles (x=x/z, y=y/z).
+              </p>
+            </div>
+        </div>
+      </a>
+
+      <a href="https://poker.practicalcoder.com">
+      <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/dhtml_poker.png" />
+              </div>
+              <h4 class="jpcCardTitle">DHTML 5 card draw</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                Before Angular, React, Vue (or whatever rocks your DOM) there
+                was dynamic html. This
+                <b> 5 Card Draw vs AI</b>
+                JavaScript app is from ~2002.
+              </p>
+            </div>
+        </div>
+      </a>
+      <a href="https://johnpc123.github.io/py-fx-scraper/">
+        <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/PythonHistorianIcon.png" />
+              </div>
+              <h4 class="jpcCardTitle">Continuous Historian</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                This Python app records
+                <b>
+                  data in real-time
+                </b>
+                Its fault tolerant, is designed to robustly failover and the
+                compression ratio is impressive.
+              </p>
+            </div>
+        </div>
+      </a>
+      <a
+      href="https://swish.swi-prolog.org/p/TowersOfHanoi.pl"
+      title="type 'start(x)' where is says 'Your query goes here ...'">
+      <div class="jpcCardFlex">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/towersofhanoi_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">Towers of Hanoi</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                A logic programming project.
+                <b>
+                  Towers of Hanoi, Prolog
+                </b>
+                To make it function type 'start(x)' in the console.
+              </p>
+            </div>
+        </div>
+      </a>
+
+        <!--
+        <div class="jpcCardFlex">
+          <a href="https://codepen.io/Kickaha/pen/XNJJqb">
+            <div class="jpcCardHeader">
+              <div class="jpcCardImg">
+                <img src="img/vanillaD3_icon.png" />
+              </div>
+              <h4 class="jpcCardTitle">Vanilla JS & D3v2</h4>
+            </div>
+            <div class="jpcCardContent">
+              <p class="jpcCardText">
+                This
+                <b>
+                  Vanilla Javascript + D3v2
+                </b>
+                is opinionated, and overdue for review.
+              </p>
+            </div>
+          </a>
+        </div>
+-->
+
+        <!--  <div class="jpcCard">
+          8.The tools of data science like <a href="https://johnpcostello.com/?access-nock-github-martingale"
+            target="_blank"> Jupyter and Pandas</a>
+          help us investigate, understand, visualise and ultimatly collaborate on otherwise
+          impenetrable subjects.
+        </div>-->
+      </div>
+    </div>
+  </body>
+</html>
