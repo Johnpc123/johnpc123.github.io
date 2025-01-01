@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Life Algorithm</title>
+<style>
+  /* Added CSS for better visualization */
+  table {
+    border-collapse: collapse;
+  }
+  td {
+    width: 20px;
+    height: 20px;
+    border: 1px solid black;
+    background-color: white; /* Initially dead */
+  }
+  .alive {
+    background-color: black; /* Alive cells are black */
+  }
+</style>
+</head>
+<body>
+<script>
+  function Go(){
+    for (var x = 1; x <= 4; x++)
+      for (var y = 1; y <= 4; y++)
+      {
+        // Using document.getElementById instead of document.all
+        var cell = document.getElementById("c" + x + y); 
+        // Simplified toggle logic
+        cell.val = cell.val == "1" ? "0" : "1"; 
+        // Directly setting style instead of using eval
+        cell.style.backgroundColor = cell.val == "1" ? "black" : "white"; 
+      }
+  }
+
+  function Evolve(){
+    for (var x = 1; x <= 4; x++)
+      for (var y = 1; y <= 4; y++){
+        // Using document.getElementById instead of document.all
+        var cell = document.getElementById("c" + x + y);
+        var count = 0;
+        // Counting living neighbors
+        if (document.getElementById("c" + (x-1) + (y-1)).val == "1") count++;
+        if (document.getElementById("c" + (x-1) + (y)).val == "1") count++;
+        if (document.getElementById("c" + (x-1) + (y+1)).val == "1") count++;
+        if (document.getElementById("c" + (x) + (y-1)).val == "1") count++;
+        if (document.getElementById("c" + (x) + (y+1)).val == "1") count++;
+        if (document.getElementById("c" + (x+1) + (y-1)).val == "1") count++;
+        if (document.getElementById("c" + (x+1) + (y)).val == "1") count++;
+        if (document.getElementById("c" + (x+1) + (y+1)).val == "1") count++;
+
+        // Applying the rules of Life
+        if (cell.val == "1"){
+          if (count < 2 || count > 3)
+            cell.val = "0"; // Dies
+        }
+        else if (count == 3)
+          cell.val = "1"; // Becomes alive
+      }
+    // Updating the display after applying the rules
+    Go(); 
+  }
+
+  // Using event listeners for button clicks
+  window.onload = function() {
+    document.getElementById('go').addEventListener('click', Go);
+    document.getElementById('evolve').addEventListener('click', Evolve);
+  };
+</script>
+
+<table border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td id="c11" val="0"></td>
+    <td id="c12" val="0"></td>
+    <td id="c13" val="0"></td>
+    <td id="c14" val="0"></td>
+  </tr>
+  <tr>
+    <td id="c21" val="0"></td>
+    <td id="c22" val="0"></td>
+    <td id="c23" val="0"></td>
+    <td id="c24" val="0"></td>
+  </tr>
+  <tr>
+    <td id="c31" val="0"></td>
+    <td id="c32" val="0"></td>
+    <td id="c33" val="0"></td>
+    <td id="c34" val="0"></td>
+  </tr>
+  <tr>
+    <td id="c41" val="0"></td>
+    <td id="c42" val="0"></td>
+    <td id="c43" val="0"></td>
+    <td id="c44" val="0"></td>
+  </tr>
+</table>
+<input type="button" id="go" value="Go">
+<input type="button" id="evolve" value="Evolve">
+</body>
+</html>

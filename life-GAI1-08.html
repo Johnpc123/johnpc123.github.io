@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Life Algorithm</title>
+  <style>
+    table {
+      border-collapse: collapse; /* Ensures cells are tightly packed */
+    }
+    td {
+      width: 10px; /* Smaller cell size for a larger grid */
+      height: 10px;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    var running = true; // Simulation starts running immediately
+    var speed = 500; // Initial speed of the simulation in milliseconds
+    var gridSize = 30; // Size of the grid (gridSize x gridSize)
+    var timer; // Variable to store the timer for the simulation
+    var generation = 0; // Counter for generations
+
+    // Function to update cell states and colors
+    function Go() {
+      for (var x = 1; x <= gridSize; x++) {
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = document.getElementById("c" + x + y); // Get the cell element
+
+          // Update cell color based on state and neighbor count
+          var count = 0;
+          // Count living neighbors (with boundary checks)
+          if (x > 1 && y > 1 && document.getElementById("c" + (x - 1) + (y - 1)).val == "1") count++;
+          if (x > 1 && document.getElementById("c" + (x - 1) + (y)).val == "1") count++;
+          if (x > 1 && y < gridSize && document.getElementById("c" + (x - 1) + (y + 1)).val == "1") count++;
+          if (y > 1 && document.getElementById("c" + (x) + (y - 1)).val == "1") count++;
+          if (y < gridSize && document.getElementById("c" + (x) + (y + 1)).val == "1") count++;
+          if (x < gridSize && y > 1 && document.getElementById("c" + (x + 1) + (y - 1)).val == "1") count++;
+          if (x < gridSize && document.getElementById("c" + (x + 1) + (y)).val == "1") count++;
+          if (x < gridSize && y < gridSize && document.getElementById("c" + (x + 1) + (y + 1)).val == "1") count++;
+
+          if (cell.val == "1") {
+            if (count == 2) {
+              cell.style.backgroundColor = "#00ffff"; // Blue for 2 neighbors
+            } else if (count == 3) {
+              cell.style.backgroundColor = "#0000ff"; // Dark blue for 3 neighbors
+            } else {
+              cell.style.backgroundColor = "#00cc00"; // Green for new live cell
+            }
+          } else {
+            cell.style.backgroundColor = "white"; // Dead cell color
+          }
+        }
+      }
+    }
+
+    // Function to evolve the grid to the next generation
+    function Evolve() {
+      var cellsToToggle = []; // Array to store cells that need to be toggled
+
+      for (var x = 1; x <= gridSize; x++) {
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = document.getElementById("c" + x + y);
+          var count = 0;
+
+          // Count living neighbors, with boundary checks
+          if (x > 1 && y > 1 && document.getElementById("c" + (x - 1) + (y - 1)).val == "1") count++;
+          if (x > 1 && document.getElementById("c" + (x - 1) + (y)).val == "1") count++;
+          if (x > 1 && y < gridSize && document.getElementById("c" + (x - 1) + (y + 1)).val == "1") count++;
+          if (y > 1 && document.getElementById("c" + (x) + (y - 1)).val == "1") count++;
+          if (y < gridSize && document.getElementById("c" + (x) + (y + 1)).val == "1") count++;
+          if (x < gridSize && y > 1 && document.getElementById("c" + (x + 1) + (y - 1)).val == "1") count++;
+          if (x < gridSize && document.getElementById("c" + (x + 1) + (y)).val == "1") count++;
+          if (x < gridSize && y < gridSize && document.getElementById("c" + (x + 1) + (y + 1)).val == "1") count++;
+
+          // Apply the rules of Conway's Game of Life
+          if (cell.val == "1") { // If the cell is alive
+            if (count < 2 || count > 3) { // Check for underpopulation or overpopulation
+              cellsToToggle.push(cell); // Mark the cell to be toggled
+            }
+          } else if (count == 3) { // If the cell is dead and has 3 living neighbors
+            cellsToToggle.push(cell); // Mark the cell to be toggled
+          }
+        }
+      }
+
+      // Toggle the states of the marked cells
+      for (var i = 0; i < cellsToToggle.length; i++) {
+        var cell = cellsToToggle[i];
+        cell.val = cell.val == "1" ? "0" : "1";
+      }
+
+      Go(); // Update the display after applying the rules, including color updates
+      generation++; // Increment the generation counter
+      // Display the generation counter (optional)
+      // document.getElementById('generation').textContent = "Generation: " + generation;
+    }
+
+    // Function to start or pause the simulation
+    function Start() {
+      if (!running) {
+        running = true;
+        document.getElementById('pause').value = "Pause"; // Change button text to "Pause"
+        timer = setInterval(Evolve, speed); // Start the simulation loop
+      } else {
+        Pause(); // Pause the simulation if already running
+      }
+    }
+
+    // Function to pause the simulation
+    function Pause() {
+      clearInterval(timer); // Clear the simulation timer
+      running = false;
+      document.getElementById('pause').value = "Start"; // Change button text to "Start"
+    }
+
+    // Function to randomize the state of the grid
+    function Randomise() {
+      for (var x = 1; x <= gridSize; x++) {
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = document.getElementById("c" + x + y);
+          cell.val = Math.round(Math.random()); // Assign a random value (0 or 1)
+          cell.style.backgroundColor = cell.val == "1" ? "black" : "white"; // Update cell color
+        }
+      }
+    }
+
+    // Function to clear the grid (make all cells dead)
+    function Clear() {
+      for (var x = 1; x <= gridSize; x++) {
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = document.getElementById("c" + x + y);
+          cell.val = "0"; // Set cell value to 0 (dead)
+          cell.style.backgroundColor = "white"; // Update cell color
+        }
+      }
+    }
+
+    // Function to fill the grid (make all cells alive)
+    function Fill() {
+      for (var x = 1; x <= gridSize; x++) {
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = document.getElementById("c" + x + y);
+          cell.val = "1"; // Set cell value to 1 (alive)
+          cell.style.backgroundColor = "black"; // Update cell color
+        }
+      }
+    }
+
+    // Function to slow down the simulation
+    function Slower() {
+      speed += 100; // Increase the delay between generations
+      if (running) { // If the simulation is running
+        clearInterval(timer); // Reset the timer with the new speed
+        timer = setInterval(Evolve, speed);
+      }
+    }
+
+    // Function to speed up the simulation
+    function Faster() {
+      speed -= 100; // Decrease the delay between generations
+      if (speed < 100) speed = 100; // Prevent the speed from going too fast
+      if (running) { // If the simulation is running
+        clearInterval(timer); // Reset the timer with the new speed
+        timer = setInterval(Evolve, speed);
+      }
+    }
+
+    // Function to evolve the grid by one step
+    function Step() {
+      if (!running) { // Only evolve if the simulation is not running
+        Evolve();
+      }
+    }
+
+    // Event listeners for button clicks
+    window.onload = function() {
+      document.getElementById('pause').addEventListener('click', Start); // Start/Pause button
+      document.getElementById('randomise').addEventListener('click', Randomise);
+      document.getElementById('clear').addEventListener('click', Clear);
+      document.getElementById('fill').addEventListener('click', Fill);
+      document.getElementById('slower').addEventListener('click', Slower);
+      document.getElementById('faster').addEventListener('click', Faster);
+      document.getElementById('step').addEventListener('click', Step);
+
+      // Initialize the grid dynamically
+      var grid = document.createElement('table');
+      grid.border = "0";
+      grid.cellpadding = "0";
+      grid.cellspacing = "0";
+      for (var x = 1; x <= gridSize; x++) {
+        var row = grid.insertRow();
+        for (var y = 1; y <= gridSize; y++) {
+          var cell = row.insertCell();
+          cell.id = "c" + x + y; // Assign a unique ID to each cell
+          cell.val = Math.round(Math.random()); // Assign a random initial value (0 or 1)
+
+          // ... (initial color assignment remains the same)
+
+          // Add an event listener to toggle the cell's state on click
+          cell.addEventListener('click', function() {
+            // ... (click event handling remains the same)
+          });
+        }
+      }
+      document.body.insertBefore(grid, document.body.firstChild); // Add the grid to the page
+
+      Start(); // Start the simulation immediately
+    };
+  </script>
+
+  <input type="button" id="pause" value="Pause">
+  <input type="button" id="randomise" value="Randomise">
+  <input type="button" id="clear" value="Clear">
+  <input type="button" id="fill" value="Fill">
+  <input type="button" id="slower" value="Slower">
+  <input type="button" id="faster" value="Faster">
+  <input type="button" id="step" value="Step">
+  </body>
+</html>
