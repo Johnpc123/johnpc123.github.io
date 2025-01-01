@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Game of Life</title>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <style>
+        :root {
+            /* Solid theme */
+            --solid-color: #3498db;
+            --solid-cell-alive: var(--solid-color);
+            --solid-cell-dead: #ffffff;
+
+            /* Life Cycle theme */
+            --lifecycle-cell-alive: #00ffff;
+            --lifecycle-cell-dead: #ffffff;
+            --lifecycle-cell-birth: #00cc00;
+            --lifecycle-cell-death: #0000ff;
+            --lifecycle-cell-hover: #ffff00;
+
+            /* Sequential theme - using solid color shades */
+            --seq-cell-dead: #ffffff;
+            --seq-cell-birth: #9ccef4;
+            --seq-cell-alive: var(--solid-color);
+            --seq-cell-death: #1a4c72;
+            --seq-cell-hover: #def1fc;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 20px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1px;
+            background-color: #ccc;
+            border: 1px solid #999;
+            margin: 20px;
+        }
+
+        .cell {
+            width: 15px;
+            height: 15px;
+            background-color: white;
+            transition: background-color 0.2s;
+        }
+
+        /* Theme-specific cell styles */
+        .lifecycle-theme .cell.alive {
+            background-color: var(--lifecycle-cell-alive);
+        }
+
+        .lifecycle-theme .cell.birth {
+            background-color: var(--lifecycle-cell-birth);
+        }
+
+        .lifecycle-theme .cell.death {
+            background-color: var(--lifecycle-cell-death);
+        }
+
+        .solid-theme .cell.alive,
+        .solid-theme .cell.birth {
+            background-color: var(--solid-cell-alive);
+        }
+
+        .sequential-theme .cell.alive {
+            background-color: var(--seq-cell-alive);
+        }
+
+        .sequential-theme .cell.birth {
+            background-color: var(--seq-cell-birth);
+        }
+
+        .sequential-theme .cell.death {
+            background-color: var(--seq-cell-death);
+        }
+
+        .controls {
+            margin: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .control-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .control-btn.highlight {
+            background-color: var(--solid-color);
+            color: white;
+            border-color: var(--solid-color);
+        }
+
+        .metrics {
+            display: flex;
+            gap: 20px;
+            margin: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .legend {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .legend-controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .control-group-title {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+
+        /* Theme-specific colors */
+        .legend-color.solid-alive { background-color: var(--solid-cell-alive); }
+        .legend-color.solid-dead { background-color: var(--solid-cell-dead); }
+        .legend-color.solid-birth { background-color: var(--solid-cell-alive); }  /* Same as alive */
+        
+        .legend-color.lifecycle-alive { background-color: var(--lifecycle-cell-alive); }
+        .legend-color.lifecycle-dead { background-color: var(--lifecycle-cell-dead); }
+        .legend-color.lifecycle-birth { background-color: var(--lifecycle-cell-birth); }
+        .legend-color.lifecycle-death { background-color: var(--lifecycle-cell-death); }
+        
+        .legend-color.seq-alive { background-color: var(--seq-cell-alive); }
+        .legend-color.seq-dead { background-color: var(--seq-cell-dead); }
+        .legend-color.seq-birth { background-color: var(--seq-cell-birth); }
+        .legend-color.seq-death { background-color: var(--seq-cell-death); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .state-name-input {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .state-name-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .state-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .state-list select {
+            flex: 1;
+            min-height: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .state-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .state-preview canvas {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        .state-io {
+            grid-column: 1 / -1;
+        }
+
+        .state-io-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .state-io textarea {
+            width: 100%;
+            height: 120px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .countdown-overlay {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: bold;
+            color: var(--solid-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .grid-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-footer {
+            margin-top: 20px;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ccc;
+        }
+        
+        .page-footer a {
+            color: var(--solid-color);
+            text-decoration: none;
+        }
+        
+        .page-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .drop-zone {
+            width: 100%;
+            min-height: 120px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: border-color 0.3s ease;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+
+        .drop-zone-text {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone-icon {
+            font-size: 2em;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .state-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .control-btn.primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .control-btn.primary:hover {
+            background-color: #45a049;
+        }
+
+        .control-btn.secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .control-btn.secondary:hover {
+            background-color: #1e88e5;
+        }
+
+        .control-btn.danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .control-btn.danger:hover {
+            background-color: #e53935;
+        }
+
+        .modal-header {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .modal-subtitle {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .game-controls {
+            position: fixed;
+            bottom: 40px; /* Space for footer */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .control-group:not(:last-child) {
+            border-right: 1px solid #eee;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn i {
+            font-size: 1.2em;
+        }
+
+        .control-btn:hover {
+            background-color: #e0e0f0;
+            transform: translateY(-1px);
+        }
+
+        .control-btn.primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .control-btn.primary:hover {
+            background-color: #45a049;
+        }
+
+        .control-btn.secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .control-btn.secondary:hover {
+            background-color: #1e88e5;
+        }
+
+        .control-btn.danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .control-btn.danger:hover {
+            background-color: #e53935;
+        }
+
+        .speed-indicator {
+            font-size: 0.9em;
+            color: #666;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .generation-counter {
+            font-size: 0.9em;
+            color: #666;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 0.8em;
+            text-align: center;
+            z-index: 90;
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .footer a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .theme-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .theme-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .theme-toggle input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: 100px; /* Space for controls */
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-items {
+            display: flex;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .theme-toggle {
+            padding-left: 20px;
+            border-left: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+
+            .state-list select {
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="legend">
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" id="aliveCellColor"></div>
+                    <span>Living Cell</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" id="birthCellColor"></div>
+                    <span>New Birth</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" id="deathCellColor"></div>
+                    <span>Recent Death</span>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <label>
+                    <input type="radio" name="colorTheme" value="lifecycle" checked> Life Cycle
+                </label>
+                <label>
+                    <input type="radio" name="colorTheme" value="solid"> Solid
+                </label>
+                <label>
+                    <input type="radio" name="colorTheme" value="sequential"> Sequential
+                </label>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div id="countdown" class="countdown-overlay">3</div>
+            <div id="grid" class="grid lifecycle-theme"></div>
+        </div>
+
+        <div class="game-controls">
+            <div class="control-group">
+                <button class="control-btn primary" id="playPause">
+                    <i class="fas fa-play"></i>
+                    <span>Play</span>
+                </button>
+                <button class="control-btn" id="step">
+                    <i class="fas fa-step-forward"></i>
+                    <span>Step</span>
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="slower">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <span class="speed-indicator">Speed: 1x</span>
+                <button class="control-btn" id="faster">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn" id="random">
+                    <i class="fas fa-random"></i>
+                    <span>Random</span>
+                </button>
+                <button class="control-btn" id="clear">
+                    <i class="fas fa-trash"></i>
+                    <span>Clear</span>
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn secondary" id="openStateManager">
+                    <i class="fas fa-save"></i>
+                    <span>States</span>
+                </button>
+                <span class="generation-counter">Gen: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for State Management -->
+    <div id="stateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-row">
+                    <span class="close-btn" title="Close">&times;</span>
+                    <h2>State Manager</h2>
+                    <span class="close-btn" title="Close">&times;</span>
+                </div>
+                <div class="modal-subtitle" id="currentStateName">Current state saved: Untitled State</div>
+            </div>
+            <div class="modal-body">
+                <div class="state-name-input">
+                    <input type="text" id="stateName" placeholder="Enter state name">
+                    <button class="control-btn primary" id="renameState">Rename</button>
+                </div>
+                
+                <div class="state-list">
+                    <h3>Saved States</h3>
+                    <select id="savedStates" size="10"></select>
+                    <div class="state-actions">
+                        <button class="control-btn primary" id="loadState">Load Selected</button>
+                        <button class="control-btn danger" id="deleteState">Delete</button>
+                        <button class="control-btn secondary" id="exportState">Export</button>
+                    </div>
+                </div>
+
+                <div class="state-preview">
+                    <h3>Preview</h3>
+                    <canvas id="previewCanvas"></canvas>
+                </div>
+
+                <div class="state-io">
+                    <h3>Import State</h3>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-icon">📁</div>
+                        <div class="drop-zone-text">Drag & drop a state file here or click to browse</div>
+                        <input type="file" id="fileInput" class="file-input" accept=".json">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="https://johnpc123.github.io/">Implemented by JohnPC123.github.io</a>
+    </div>
+
+    <script>
+        class StateManager {
+            constructor() {
+                this.states = new Map();
+                this.loadFromStorage();
+            }
+
+            saveState(id, state) {
+                this.states.set(id, state);
+                this.saveToStorage();
+            }
+
+            deleteState(id) {
+                this.states.delete(id);
+                this.saveToStorage();
+            }
+
+            getState(id) {
+                return this.states.get(id);
+            }
+
+            getAllStates() {
+                return Object.fromEntries(this.states);
+            }
+
+            saveToStorage() {
+                const statesObj = Object.fromEntries(this.states);
+                localStorage.setItem('gameStates', JSON.stringify(statesObj));
+            }
+
+            loadFromStorage() {
+                const stored = localStorage.getItem('gameStates');
+                if (stored) {
+                    const statesObj = JSON.parse(stored);
+                    this.states = new Map(Object.entries(statesObj));
+                }
+            }
+
+            updateState(id, state) {
+                this.states.set(id, state);
+                this.saveToStorage();
+            }
+        }
+
+        class GameOfLife {
+            constructor(width = 50, height = 30) {
+                this.width = width;
+                this.height = height;
+                this.running = false;
+                this.speed = 200;
+                this.generation = 0;
+                this.grid = Array(height).fill().map(() => Array(width).fill(0));
+                this.previousGrid = Array(height).fill().map(() => Array(width).fill(0));
+                this.cellSize = 15;
+                this.stateManager = new StateManager();
+                this.currentTheme = 'lifecycle';
+                
+                this.createGrid();
+                this.setupEventListeners();
+                this.randomize();
+                
+                // Start automatically after a short delay
+                setTimeout(() => {
+                    this.start();
+                    const playPauseBtn = document.getElementById('playPause');
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+                }, 1000);
+            }
+
+            createGrid() {
+                const grid = document.getElementById('grid');
+                grid.innerHTML = '';
+                grid.style.gridTemplateColumns = `repeat(${this.width}, ${this.cellSize}px)`;
+                
+                for (let i = 0; i < this.height; i++) {
+                    for (let j = 0; j < this.width; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        grid.appendChild(cell);
+                    }
+                }
+            }
+
+            randomize() {
+                const density = 0.3; // 30% chance of live cells
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        this.grid[y][x] = Math.random() < density ? 1 : 0;
+                    }
+                }
+                this.previousGrid = this.grid.map(row => [...row]);
+                this.generation = 0;
+                this.draw();
+            }
+
+            start() {
+                if (!this.running) {
+                    this.running = true;
+                    this.play();
+                }
+            }
+
+            stop() {
+                this.running = false;
+            }
+
+            play() {
+                if (this.running) {
+                    this.step();
+                    setTimeout(() => this.play(), this.speed);
+                }
+            }
+
+            step() {
+                const newGrid = Array(this.height).fill().map(() => Array(this.width).fill(0));
+                let changes = 0;
+                
+                for (let i = 0; i < this.height; i++) {
+                    for (let j = 0; j < this.width; j++) {
+                        const neighbors = this.countNeighbors(i, j);
+                        const isAlive = this.grid[i][j];
+                        let willBeAlive;
+                        
+                        if (isAlive) {
+                            willBeAlive = (neighbors === 2 || neighbors === 3);
+                        } else {
+                            willBeAlive = (neighbors === 3);
+                        }
+                        
+                        newGrid[i][j] = willBeAlive ? 1 : 0;
+                        if (willBeAlive !== isAlive) {
+                            changes++;
+                        }
+                    }
+                }
+                
+                // Check for stable state (no changes)
+                if (changes === 0) {
+                    this.stop();
+                    const playPauseBtn = document.getElementById('playPause');
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+                    return;
+                }
+                
+                this.previousGrid = this.grid.map(row => [...row]);
+                this.grid = newGrid;
+                this.generation++;
+                this.draw();
+                
+                // Update generation counter
+                document.querySelector('.generation-counter').textContent = `Gen: ${this.generation}`;
+            }
+
+            countNeighbors(row, col) {
+                let count = 0;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (i === 0 && j === 0) continue;
+                        const newRow = (row + i + this.height) % this.height;
+                        const newCol = (col + j + this.width) % this.width;
+                        count += this.grid[newRow][newCol];
+                    }
+                }
+                return count;
+            }
+
+            draw() {
+                const cells = document.getElementById('grid').children;
+                for (let i = 0; i < this.height; i++) {
+                    for (let j = 0; j < this.width; j++) {
+                        const cell = cells[i * this.width + j];
+                        const isAlive = this.grid[i][j];
+                        const wasAlive = this.previousGrid[i][j];
+                        
+                        cell.className = 'cell';
+                        if (isAlive) {
+                            cell.classList.add('alive');
+                            if (!wasAlive) cell.classList.add('birth');
+                        } else if (wasAlive) {
+                            cell.classList.add('death');
+                        }
+                    }
+                }
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.close-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.getElementById('stateModal').style.display = 'none';
+                    });
+                });
+
+                document.getElementById('grid').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cell')) {
+                        const row = parseInt(e.target.dataset.row);
+                        const col = parseInt(e.target.dataset.col);
+                        this.grid[row][col] = !this.grid[row][col];
+                        this.previousGrid[row][col] = this.grid[row][col];
+                        this.draw();
+                    }
+                });
+
+                document.getElementById('playPause').addEventListener('click', (e) => {
+                    this.togglePlay();
+                    e.target.innerHTML = this.running ? '<i class="fas fa-pause"></i><span>Pause</span>' : '<i class="fas fa-play"></i><span>Play</span>';
+                });
+
+                document.getElementById('step').addEventListener('click', () => {
+                    this.step();
+                });
+
+                document.getElementById('clear').addEventListener('click', () => {
+                    this.clear();
+                });
+
+                document.getElementById('random').addEventListener('click', () => {
+                    this.randomize();
+                });
+
+                document.getElementById('slower').addEventListener('click', () => {
+                    this.adjustSpeed(50);
+                });
+
+                document.getElementById('faster').addEventListener('click', () => {
+                    this.adjustSpeed(-50);
+                });
+
+                document.querySelectorAll('input[name="colorTheme"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const grid = document.getElementById('grid');
+                        grid.classList.remove('lifecycle-theme', 'modern-theme', 'sequential-theme', 'solid-theme');
+                        grid.classList.add(`${e.target.value}-theme`);
+                        this.updateLegendColors(e.target.value);
+                    });
+                });
+
+                document.getElementById('openStateManager').addEventListener('click', () => {
+                    document.getElementById('stateModal').style.display = 'block';
+                    // Auto-save current state when opening modal
+                    const now = new Date();
+                    const defaultName = `state_${now.toISOString().replace(/[:.]/g, '-')}`;
+                    document.getElementById('stateName').value = defaultName;
+                    this.saveCurrentState(defaultName);
+                });
+
+                document.getElementById('renameState').addEventListener('click', () => {
+                    const select = document.getElementById('savedStates');
+                    const nameInput = document.getElementById('stateName');
+                    const newName = nameInput.value.trim();
+                    const selectedId = select.value;
+                    
+                    if (selectedId && newName) {
+                        const state = this.stateManager.getState(selectedId);
+                        if (state) {
+                            state.name = newName;
+                            this.stateManager.updateState(selectedId, state);
+                            this.updateStatesList();
+                            select.value = selectedId; // Maintain selection
+                        }
+                    }
+                });
+
+                document.getElementById('savedStates').addEventListener('change', (e) => {
+                    const stateId = e.target.value;
+                    const state = this.stateManager.getState(stateId);
+                    if (state) {
+                        document.getElementById('stateName').value = state.name || '';
+                        this.previewSelectedState(stateId);
+                        document.getElementById('stateIO').value = JSON.stringify(state, null, 2);
+                    }
+                });
+
+                document.getElementById('loadState').addEventListener('click', () => {
+                    const selectedId = document.getElementById('savedStates').value;
+                    if (selectedId) {
+                        this.loadSelectedState(selectedId);
+                    }
+                });
+
+                document.getElementById('deleteState').addEventListener('click', () => {
+                    const select = document.getElementById('savedStates');
+                    const selectedId = select.value;
+                    if (selectedId) {
+                        this.stateManager.deleteState(selectedId);
+                        this.updateStatesList();
+                        document.getElementById('stateIO').value = '';
+                        document.getElementById('previewCanvas').style.display = 'none';
+                    }
+                });
+
+                const dropZone = document.getElementById('dropZone');
+                const fileInput = document.getElementById('fileInput');
+
+                dropZone.addEventListener('click', () => fileInput.click());
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('drag-over');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('drag-over');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        this.handleFileImport(file);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.handleFileImport(file);
+                    }
+                });
+
+                document.getElementById('exportState').addEventListener('click', () => {
+                    const select = document.getElementById('savedStates');
+                    const selectedId = select.value;
+                    if (selectedId) {
+                        const state = this.stateManager.getState(selectedId);
+                        if (state) {
+                            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${state.name || 'game-state'}.json`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        }
+                    }
+                });
+
+                window.addEventListener('click', (e) => {
+                    const modal = document.getElementById('stateModal');
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+
+            togglePlay() {
+                this.running = !this.running;
+            }
+
+            adjustSpeed(delta) {
+                this.speed = Math.max(50, Math.min(1000, this.speed + delta));
+                
+                // Update speed indicator
+                const speedIndicator = document.querySelector('.speed-indicator');
+                const speedMultiplier = (1000 / this.speed).toFixed(1);
+                speedIndicator.textContent = `Speed: ${speedMultiplier}x`;
+                
+                // If running, restart with new speed
+                if (this.running) {
+                    this.stop();
+                    this.start();
+                }
+            }
+
+            saveCurrentState(name = '') {
+                const now = new Date();
+                const state = {
+                    grid: this.grid.map(row => [...row]),
+                    previousGrid: this.previousGrid.map(row => [...row]),
+                    generation: this.generation,
+                    timestamp: now.toISOString(),
+                    name: name || `state_${now.toISOString().replace(/[:.]/g, '-')}`
+                };
+                
+                const id = uuid.v4();
+                this.stateManager.saveState(id, state);
+                this.updateStatesList();
+                
+                // Select the newly saved state
+                const select = document.getElementById('savedStates');
+                select.value = id;
+                this.previewSelectedState(id);
+                
+                return id;
+            }
+
+            updateStatesList() {
+                const select = document.getElementById('savedStates');
+                const states = this.stateManager.getAllStates();
+                select.innerHTML = '';
+                
+                Object.entries(states).forEach(([id, state]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = state.name || `State ${Object.keys(states).indexOf(id) + 1}`;
+                    select.appendChild(option);
+                });
+                
+                if (select.options.length > 0) {
+                    select.selectedIndex = select.options.length - 1;
+                    this.previewSelectedState(select.value);
+                }
+            }
+
+            loadSelectedState(stateId) {
+                const state = this.stateManager.getState(stateId);
+                if (state) {
+                    this.grid = state.grid.map(row => [...row]);
+                    this.previousGrid = state.previousGrid.map(row => [...row]);
+                    this.generation = state.generation || 0;
+                    this.draw();
+                    document.getElementById('stateModal').style.display = 'none';
+                }
+            }
+
+            handleFileImport(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const state = JSON.parse(e.target.result);
+                        const id = this.stateManager.saveState(uuid.v4(), state);
+                        this.updateStatesList();
+                        // Select and preview the imported state
+                        const select = document.getElementById('savedStates');
+                        select.value = id;
+                        this.previewSelectedState(id);
+                    } catch (error) {
+                        alert('Invalid state file format');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            updateLegendColors(theme) {
+                const colors = {
+                    lifecycle: {
+                        dead: 'lifecycle-dead',
+                        alive: 'lifecycle-alive',
+                        birth: 'lifecycle-birth',
+                        death: 'lifecycle-death'
+                    },
+                    solid: {
+                        dead: 'solid-dead',
+                        alive: 'solid-alive',
+                        birth: 'solid-alive'  /* Same as alive for solid theme */
+                    },
+                    sequential: {
+                        dead: 'seq-dead',
+                        alive: 'seq-alive',
+                        birth: 'seq-birth',
+                        death: 'seq-death'
+                    }
+                };
+
+                // Hide/show legend items based on theme
+                const legendItems = document.querySelectorAll('.legend-item');
+                legendItems.forEach(item => {
+                    const type = item.querySelector('.legend-color').id.replace('CellColor', '');
+                    if (theme === 'solid' && (type === 'death')) {
+                        item.style.display = 'none';
+                    } else {
+                        item.style.display = 'flex';
+                    }
+                });
+
+                // Update colors for visible items
+                const currentColors = colors[theme];
+                Object.keys(currentColors).forEach(state => {
+                    const element = document.getElementById(`${state}CellColor`);
+                    if (element) {
+                        element.className = `legend-color ${currentColors[state]}`;
+                        // For solid theme, ensure birth and alive use the same color
+                        if (theme === 'solid' && (state === 'birth' || state === 'alive')) {
+                            element.style.backgroundColor = getComputedStyle(document.documentElement)
+                                .getPropertyValue('--solid-cell-alive');
+                        }
+                    }
+                });
+            }
+
+            previewSelectedState(stateId) {
+                const canvas = document.getElementById('previewCanvas');
+                const state = this.stateManager.getState(stateId);
+                
+                if (!state) {
+                    canvas.style.display = 'none';
+                    return;
+                }
+
+                const pixelSize = 2;
+                canvas.width = this.width * pixelSize;
+                canvas.height = this.height * pixelSize;
+                canvas.style.display = 'block';
+
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const colors = {
+                    alive: getComputedStyle(document.documentElement).getPropertyValue('--seq-cell-alive'),
+                    birth: getComputedStyle(document.documentElement).getPropertyValue('--seq-cell-birth'),
+                    death: getComputedStyle(document.documentElement).getPropertyValue('--seq-cell-death')
+                };
+
+                for (let i = 0; i < this.height; i++) {
+                    for (let j = 0; j < this.width; j++) {
+                        const isAlive = state.grid[i][j];
+                        const wasAlive = state.previousGrid[i][j];
+
+                        if (isAlive) {
+                            ctx.fillStyle = wasAlive ? colors.alive : colors.birth;
+                            ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+                        } else if (wasAlive) {
+                            ctx.fillStyle = colors.death;
+                            ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            const game = new GameOfLife();
+        });
+    </script>
+</body>
+</html>
