@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conway's Game of Life</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --cell-alive: #3498db;
+            --cell-dead: #ffffff;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        #status {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: var(--primary-color);
+        }
+
+        .grid {
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .grid-row {
+            display: flex;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ddd;
+            background-color: var(--cell-dead);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cell.alive {
+            background-color: var(--cell-alive);
+        }
+    </style>
+</head>
+<body>
+    <h1>Conway's Game of Life</h1>
+    <div id="status">Generation: 0</div>
+    <div class="controls">
+        <button class="control-btn" id="playPause">Play</button>
+        <button class="control-btn" id="step">Step</button>
+        <button class="control-btn" id="clear">Clear</button>
+        <button class="control-btn" id="random">Random</button>
+        <button class="control-btn" id="slower">Slower</button>
+        <button class="control-btn" id="faster">Faster</button>
+    </div>
+    <div id="grid" class="grid"></div>
+
+    <script>
+        class GameOfLife {
+            constructor(rows = 30, cols = 30) {
+                this.rows = rows;
+                this.cols = cols;
+                this.grid = Array(rows).fill().map(() => Array(cols).fill(false));
+                this.generation = 0;
+                this.isRunning = false;
+                this.speed = 500;
+                this.interval = null;
+                
+                this.initializeGrid();
+                this.setupEventListeners();
+            }
+
+            initializeGrid() {
+                const gridElement = document.getElementById('grid');
+                gridElement.innerHTML = '';
+                
+                for (let i = 0; i < this.rows; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'grid-row';
+                    
+                    for (let j = 0; j < this.cols; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        row.appendChild(cell);
+                    }
+                    
+                    gridElement.appendChild(row);
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('playPause').addEventListener('click', () => this.togglePlay());
+                document.getElementById('step').addEventListener('click', () => this.step());
+                document.getElementById('clear').addEventListener('click', () => this.clear());
+                document.getElementById('random').addEventListener('click', () => this.randomize());
+                document.getElementById('slower').addEventListener('click', () => this.adjustSpeed(100));
+                document.getElementById('faster').addEventListener('click', () => this.adjustSpeed(-100));
+
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.addEventListener('click', (e) => {
+                        const row = parseInt(e.target.dataset.row);
+                        const col = parseInt(e.target.dataset.col);
+                        this.toggleCell(row, col);
+                    });
+                });
+            }
+
+            togglePlay() {
+                const playPauseBtn = document.getElementById('playPause');
+                this.isRunning = !this.isRunning;
+                playPauseBtn.textContent = this.isRunning ? 'Pause' : 'Play';
+                
+                if (this.isRunning) {
+                    this.interval = setInterval(() => this.step(), this.speed);
+                } else {
+                    clearInterval(this.interval);
+                }
+            }
+
+            step() {
+                const newGrid = this.grid.map(arr => [...arr]);
+
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        const neighbors = this.countNeighbors(i, j);
+                        
+                        if (this.grid[i][j]) {
+                            newGrid[i][j] = neighbors === 2 || neighbors === 3;
+                        } else {
+                            newGrid[i][j] = neighbors === 3;
+                        }
+                    }
+                }
+
+                this.grid = newGrid;
+                this.generation++;
+                this.updateDisplay();
+            }
+
+            countNeighbors(row, col) {
+                let count = 0;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (i === 0 && j === 0) continue;
+                        
+                        const newRow = (row + i + this.rows) % this.rows;
+                        const newCol = (col + j + this.cols) % this.cols;
+                        
+                        if (this.grid[newRow][newCol]) count++;
+                    }
+                }
+                return count;
+            }
+
+            toggleCell(row, col) {
+                this.grid[row][col] = !this.grid[row][col];
+                this.updateDisplay();
+            }
+
+            clear() {
+                this.grid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
+                this.generation = 0;
+                this.updateDisplay();
+            }
+
+            randomize() {
+                this.grid = this.grid.map(row => row.map(() => Math.random() > 0.7));
+                this.updateDisplay();
+            }
+
+            adjustSpeed(delta) {
+                this.speed = Math.max(100, Math.min(1000, this.speed + delta));
+                if (this.isRunning) {
+                    clearInterval(this.interval);
+                    this.interval = setInterval(() => this.step(), this.speed);
+                }
+                document.getElementById('status').textContent = 
+                    `Generation: ${this.generation} | Speed: ${Math.round(1000 / this.speed)} fps`;
+            }
+
+            updateDisplay() {
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach(cell => {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    cell.classList.toggle('alive', this.grid[row][col]);
+                });
+                
+                document.getElementById('status').textContent = 
+                    `Generation: ${this.generation} | Speed: ${Math.round(1000 / this.speed)} fps`;
+            }
+        }
+
+        // Initialize the game when the document is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const game = new GameOfLife();
+        });
+    </script>
+</body>
+</html>
