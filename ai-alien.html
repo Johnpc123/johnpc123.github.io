@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tank vs. Alien</title>
+<style>
+body { margin: 0; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+
+<p>My fascination with AI began when I was young and discovered my father's Science Fiction novels on our family bookshelf. I grew up on the novels of Isaac Asimov, Arthur C. Clarke, Robert A. Heinlein, et al. My very first attempt at AI was an alien flying saucer in a space invader game I wrote at the back of the class in a notebook when I was 10 or 11. I remember being disappointed at how dumb it was as it only reacted to user input.</p>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+const canvas = document.getElementById("myCanvas");
+const ctx = canvas.getContext("2d");
+
+// Tank
+const tankWidth = 50;
+const tankHeight = 20;
+let tankX = canvas.width/2 - tankWidth/2;
+let tankY = canvas.height - tankHeight - 10;
+
+// Turret
+const turretWidth = 10;
+const turretHeight = 10;
+
+// Bullet
+let bulletX = tankX + tankWidth/2 - turretWidth/2;
+let bulletY = tankY;
+let bulletFired = false;
+
+// Alien
+let alienX = canvas.width/2;
+let alienY = 0;
+let alienWidth = 40;
+let alienHeight = 20;
+let alienDx = 2; // Initial horizontal speed
+
+// Event listeners for movement and shooting
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+    if(e.key == "d") {
+        tankX += 5;
+        alienDx = Math.abs(alienDx); // Alien moves right
+    }
+    else if(e.key == "s") {
+        tankX -= 5;
+        alienDx = -Math.abs(alienDx); // Alien moves left
+    }
+    if(e.key == " " &&!bulletFired) {
+        bulletX = tankX + tankWidth/2 - turretWidth/2;
+        bulletY = tankY;
+        bulletFired = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.key == "d" || e.key == "s") {
+        // You can add deceleration here if you want smoother movement
+    }
+}
+
+function drawTank() {
+    ctx.fillStyle = "green";
+    ctx.fillRect(tankX, tankY, tankWidth, tankHeight);
+    ctx.fillStyle = "black";
+    ctx.fillRect(tankX + tankWidth/2 - turretWidth/2, tankY - turretHeight, turretWidth, turretHeight);
+}
+
+function drawBullet() {
+    ctx.fillStyle = "red";
+    ctx.fillRect(bulletX, bulletY, turretWidth, turretHeight);
+}
+
+function drawAlien() {
+    ctx.fillStyle = "blue";
+    ctx.fillRect(alienX, alienY, alienWidth, alienHeight);
+}
+
+function resetAlien() {
+    alienX = canvas.width/2;
+    alienY = 0;
+}
+
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawTank();
+
+    if(bulletFired) {
+        bulletY -= 5;
+        drawBullet();
+        if (bulletY < 0) {
+            bulletFired = false;
+        }
+    }
+
+    alienY += 1;
+    alienX += alienDx;
+    if (alienX + alienWidth > canvas.width || alienX < 0) {
+        alienDx = -alienDx; // Change alien direction
+    }
+    drawAlien();
+
+    // Collision detection (very basic)
+    if (bulletX < alienX + alienWidth &&
+        bulletX + turretWidth > alienX &&
+        bulletY < alienY + alienHeight &&
+        bulletY + turretHeight > alienY) {
+        // Alien hit!
+        resetAlien();
+        bulletFired = false;
+    }
+
+    // Reset alien if it goes off screen (bottom)
+    if (alienY > canvas.height) {
+        resetAlien();
+    }
+
+    requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>

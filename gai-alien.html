@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tank vs. Alien</title>
+<style>
+body { margin: 0; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+const canvas = document.getElementById("myCanvas");
+const ctx = canvas.getContext("2d");
+
+// Tank image (Base64 encoded)
+const tankImg = new Image();
+tankImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+
+// Alien image (Base64 encoded)
+const alienImg = new Image();
+alienImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+
+//alienImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAAFUlEQVQI12NkYGD4z4AFoAMbCUfyAsWBgYGJgYoBgYGNgwAHSwBiMjI4L4JAAAAABJRU5ErkJggg==';
+// Tank
+const tankWidth = 50;
+const tankHeight = 20;
+let tankX = canvas.width/2 - tankWidth/2;
+let tankY = canvas.height - tankHeight - 10;
+
+// Turret
+const turretWidth = 10;
+const turretHeight = 10;
+
+// Bullet
+let bulletX = tankX + tankWidth/2 - turretWidth/2;
+let bulletY = tankY;
+let bulletFired = false;
+
+// Alien
+let alienX = canvas.width/2;
+let alienY = 0;
+let alienWidth = 40;
+let alienHeight = 20;
+let alienDx = 2; // Initial horizontal speed
+
+// Game state
+let gameOver = false;
+let score = 0;
+
+// Sound effects
+// const shootSound = new Audio('shoot.wav'); // Replace with your shoot sound URL
+// const shootSound = new Audio('data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAAQAAABAAZGF0YQAAAAA='); // Replace with actual Base64 data
+// const hitSound = new Audio('hit.wav'); // Replace with your hit sound URL
+// const hitSound = new Audio('data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAAQAAABAAZGF0YQAAAAA='); // Replace with actual Base64 data
+
+// Event listeners for movement and shooting
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+    if(e.key == "d") {
+        tankX += 5;
+        alienDx = Math.abs(alienDx); // Alien moves right
+    }
+    else if(e.key == "s") {
+        tankX -= 5;
+        alienDx = -Math.abs(alienDx); // Alien moves left
+    }
+    if(e.key == " " &&!bulletFired) {
+        bulletX = tankX + tankWidth/2 - turretWidth/2;
+        bulletY = tankY;
+        bulletFired = true;
+        // shootSound.play(); 
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.key == "d" || e.key == "s") {
+        // You can add deceleration here if you want smoother movement
+    }
+}
+
+function drawTank() {
+    ctx.drawImage(tankImg, tankX, tankY, tankWidth, tankHeight);
+    ctx.fillStyle = "black";
+    ctx.fillRect(tankX + tankWidth/2 - turretWidth/2, tankY - turretHeight, turretWidth, turretHeight);
+}
+
+function drawBullet() {
+    ctx.fillStyle = "red";
+    ctx.fillRect(bulletX, bulletY, turretWidth, turretHeight);
+}
+
+function drawAlien() {
+    ctx.drawImage(alienImg, alienX, alienY, alienWidth, alienHeight);
+}
+
+function resetAlien() {
+    alienX = canvas.width/2;
+    alienY = 0;
+}
+
+function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Score: " + score, 8, 20);
+}
+
+function drawGameOver() {
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "red";
+    ctx.fillText("GAME OVER", canvas.width/2 - 100, canvas.height/2);
+}
+
+function update() {
+    if (!gameOver) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawTank();
+        drawScore();
+
+        if(bulletFired) {
+            bulletY -= 5;
+            drawBullet();
+            if (bulletY < 0) {
+                bulletFired = false;
+            }
+        }
+
+        alienY += 1;
+        alienX += alienDx;
+        if (alienX + alienWidth > canvas.width || alienX < 0) {
+            alienDx = -alienDx; // Change alien direction
+        }
+        drawAlien();
+
+        // Collision detection
+        if (bulletX < alienX + alienWidth &&
+            bulletX + turretWidth > alienX &&
+            bulletY < alienY + alienHeight &&
+            bulletY + turretHeight > alienY) {
+            // Alien hit!
+            score++;
+            // hitSound.play();
+            resetAlien();
+            bulletFired = false;
+        }
+
+        // Reset alien if it goes off screen (bottom)
+        if (alienY > canvas.height) {
+            gameOver = true;
+        }
+    } else {
+        drawGameOver();
+    }
+
+    requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
