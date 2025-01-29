@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Enhanced Alien Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #e6e6e6;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200vh; /* Double the height to ensure seamless loop */
+            pointer-events: none;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
+                radial-gradient(2px 2px at 50px 160px, #ffffff, transparent),
+                radial-gradient(2px 2px at 200px 20px, #ffffff, transparent),
+                radial-gradient(2px 2px at 300px 250px, #ffffff, transparent),
+                radial-gradient(2px 2px at 400px 150px, #ffffff, transparent),
+                radial-gradient(2px 2px at 450px 50px, #ffffff, transparent),
+                /* Second set of stars for seamless loop */
+                radial-gradient(2px 2px at 120px 230px, #ffffff, transparent),
+                radial-gradient(2px 2px at 140px 270px, #ffffff, transparent),
+                radial-gradient(2px 2px at 250px 360px, #ffffff, transparent),
+                radial-gradient(2px 2px at 500px 220px, #ffffff, transparent),
+                radial-gradient(2px 2px at 600px 450px, #ffffff, transparent),
+                radial-gradient(2px 2px at 700px 350px, #ffffff, transparent),
+                radial-gradient(2px 2px at 750px 250px, #ffffff, transparent);
+            background-size: 100% 100vh; /* Make background repeat every viewport height */
+            background-repeat: repeat-y;
+            animation: stars 20s linear infinite;
+        }
+
+        @keyframes stars {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-100vh); /* Only move one viewport height */
+            }
+        }
+
+        .container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 128, 255, 0.1);
+            background: #000;
+        }
+
+        h1 {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 128, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: #4da6ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #80bfff;
+            text-decoration: underline;
+        }
+
+        i {
+            font-style: italic;
+            opacity: 0.9;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <h1>AI Enhanced Alien Game</h1>
+        
+        <p>This version my alien invasion game has been enhanced with several AI-suggested improvements, <i style="color: red">(AI probably thinks adding two numbers is "machine learning")</i>. The alien's movement patterns have been refined to create more engaging gameplay <i style="color: red">(If by 'refined' you mean it moves like a drunk penguin)</i>, with the UFO now featuring smoother trajectories and more responsive controls.</p>
+        
+        <p>The game includes intelligent difficulty scaling<i style="color: red">(The AI's idea of 'intelligence' is flipping a coin)</i>, where the alien's behavior adapts to the player's performance <i style="color: red">(It adapts like a rock adapts to gravity - it doesn't)</i>. As your score increases, the alien's movement becomes more unpredictable and challenging, creating a more dynamic gaming experience <i style="color: red">(The only thing unpredictable here is the AI's ability to tell the truth)</i>.</p>
+        <p><a href="ai-alien.html"> Back to original </a></p>
+
+        
+        <canvas id="gameCanvas" width="480" height="320"></canvas>
+        
+        <p>Visual elements have been optimized for better user experience, with carefully chosen colors and shapes that enhance visibility while maintaining the classic arcade feel <i style="color: red">(Finally got something right! Though a blind bat could've done the same)</i>. The scoring system and game-over mechanics have been refined based on player interaction analysis <i style="color: red">(By 'analysis' they mean they watched their cat walk across the keyboard)</i>.</p>
+
+        <script>
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            // Tank image (Base64 encoded)
+            const tankImg = new Image();
+            tankImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+
+            // Alien image (Base64 encoded)
+            const alienImg = new Image();
+            alienImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAB7SURBVDiNY2AYBaNgFDACIYLxf0YGBgYGVkZGxv+MjIwMTAyMDP8ZGBkYmBgZGP4zMjIwMDMyMPz/z8DAyMTI8J+BkYGBiYmR4T8DIwMDIxMjw38GBgYGBkYEH1mCkYGBgZGJkQEMUBTAzGVkZGD4z8DAwMDEyMDwf6ADAQBLHRgZ+nZkxwAAAABJRU5ErkJggg==';
+
+            // Tank
+            const tankWidth = 50;
+            const tankHeight = 20;
+            let tankX = canvas.width/2 - tankWidth/2;
+            let tankY = canvas.height - tankHeight - 10;
+
+            // Turret
+            const turretWidth = 10;
+            const turretHeight = 10;
+
+            // Bullet
+            let bulletX = tankX + tankWidth/2 - turretWidth/2;
+            let bulletY = tankY;
+            let bulletFired = false;
+
+            // Alien
+            let alienX = canvas.width/2;
+            let alienY = 0;
+            let alienWidth = 20;
+            let alienHeight = 20;
+            let alienDx = 2; // Initial horizontal speed
+
+            // Game state
+            let gameOver = false;
+            let score = 0;
+            let countdown = 3; // Countdown timer
+
+            // Sound effects
+            // const shootSound = new Audio('shoot.wav'); // Replace with your shoot sound URL
+            // const shootSound = new Audio('data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAAQAAABAAZGF0YQAAAAA='); // Replace with actual Base64 data
+            // const hitSound = new Audio('hit.wav'); // Replace with your hit sound URL
+            // const hitSound = new Audio('data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAAQAAABAAZGF0YQAAAAA='); // Replace with actual Base64 data
+
+            // Event listeners for movement and shooting
+            document.addEventListener("keydown", keyDownHandler, false);
+            document.addEventListener("keyup", keyUpHandler, false);
+
+            // Add mouse and touch event listeners
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('click', handleShoot);
+            canvas.addEventListener('touchstart', handleTouchStart);
+            canvas.addEventListener('touchmove', handleTouchMove);
+            canvas.addEventListener('touchend', handleTouchEnd);
+
+            let lastTouchX = null;
+
+            function keyDownHandler(e) {
+                if(e.key == "d") {
+                    tankX += 5;
+                    alienDx = Math.abs(alienDx); // Alien moves right
+                }
+                else if(e.key == "s") {
+                    tankX -= 5;
+                    alienDx = -Math.abs(alienDx); // Alien moves left
+                }
+                if(e.key == " " &&!bulletFired) {
+                    bulletX = tankX + tankWidth/2 - turretWidth/2;
+                    bulletY = tankY;
+                    bulletFired = true;
+                    // shootSound.play(); 
+                }
+            }
+
+            function keyUpHandler(e) {
+                if(e.key == "d" || e.key == "s") {
+                    // You can add deceleration here if you want smoother movement
+                }
+            }
+
+            function handleMouseMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const previousTankX = tankX;
+                tankX = mouseX - tankWidth/2;
+                
+                // Keep tank within canvas bounds
+                if (tankX < 0) tankX = 0;
+                if (tankX + tankWidth > canvas.width) tankX = canvas.width - tankWidth;
+
+                // Update alien direction based on tank movement
+                if (tankX > previousTankX) {
+                    alienDx = Math.abs(alienDx); // Alien moves right
+                } else if (tankX < previousTankX) {
+                    alienDx = -Math.abs(alienDx); // Alien moves left
+                }
+            }
+
+            function handleShoot(e) {
+                if (!bulletFired) {
+                    bulletX = tankX + tankWidth/2 - turretWidth/2;
+                    bulletY = tankY;
+                    bulletFired = true;
+                }
+            }
+
+            function handleTouchStart(e) {
+                e.preventDefault(); // Prevent scrolling
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                lastTouchX = touch.clientX - rect.left;
+                handleShoot(e); // Shoot on touch
+            }
+
+            function handleTouchMove(e) {
+                e.preventDefault(); // Prevent scrolling
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const touchX = touch.clientX - rect.left;
+                const previousTankX = tankX;
+                
+                // Move tank based on touch position
+                tankX = touchX - tankWidth/2;
+                
+                // Keep tank within canvas bounds
+                if (tankX < 0) tankX = 0;
+                if (tankX + tankWidth > canvas.width) tankX = canvas.width - tankWidth;
+                
+                // Update alien direction based on tank movement
+                if (tankX > previousTankX) {
+                    alienDx = Math.abs(alienDx); // Alien moves right
+                } else if (tankX < previousTankX) {
+                    alienDx = -Math.abs(alienDx); // Alien moves left
+                }
+                
+                lastTouchX = touchX;
+            }
+
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                lastTouchX = null;
+            }
+
+            function drawTank() {
+                ctx.drawImage(tankImg, tankX, tankY, tankWidth, tankHeight);
+                ctx.fillStyle = "black";
+                ctx.fillRect(tankX + tankWidth/2 - turretWidth/2, tankY - turretHeight, turretWidth, turretHeight);
+            }
+
+            function drawBullet() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(bulletX, bulletY, turretWidth, turretHeight);
+            }
+
+            function drawAlien() {
+                ctx.fillStyle = 'purple';  // Change color to make it more visible
+                ctx.beginPath();
+                ctx.arc(alienX + alienWidth/2, alienY + alienHeight/2, alienWidth/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'silver';
+                ctx.beginPath();
+                ctx.ellipse(alienX + alienWidth/2, alienY + alienHeight/2, alienWidth/3, alienHeight/4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function resetAlien() {
+                alienX = canvas.width/2;
+                alienY = 0;
+            }
+
+            function resetGame() {
+                if (!gameOver) return; // Only start countdown if game is over
+                countdown = 3;
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        resetAlien();
+                        bulletFired = false;
+                        gameOver = false;
+                        score = 0;
+                        tankX = canvas.width/2 - tankWidth/2; // Reset tank position
+                        alienX = canvas.width/2; // Reset alien position
+                        alienY = 0;
+                    }
+                }, 1000);
+            }
+
+            function drawScore() {
+                ctx.font = "16px Arial";
+                ctx.fillStyle = "black";
+                ctx.fillText("Score: " + score, 8, 20);
+            }
+
+            function drawGameOver() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas first
+                
+                // Add shadow for better visibility
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                // Game Over text
+                ctx.fillStyle = '#ff3333';
+                ctx.font = 'bold 30px Arial';
+                ctx.fillText('GAME OVER', canvas.width / 2 - 100, (canvas.height / 2) - 30);
+                
+                // Countdown text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 30px Arial';
+                ctx.fillText('Restarting in: ' + countdown, canvas.width / 2 - 100, (canvas.height / 2) + 20);
+                
+                // Score text
+                ctx.fillStyle = '#4da6ff';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('Final Score: ' + score, canvas.width / 2 - 50, (canvas.height / 2) + 80);
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            }
+
+            function update() {
+                if (!gameOver) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.textAlign = "right";
+                    ctx.fillText("Mouse/Touch, Click/Tap ", canvas.width - 10, 19);
+                    ctx.fillText("Keyboard: 'S'/'D' keys, Space)", canvas.width - 10, 39);
+                    ctx.textAlign = "left";
+                    drawScore();
+                    drawTank();
+                    
+                    if (bulletFired) {
+                        bulletY -= 5;
+                        drawBullet();
+                        if (bulletY < 0) {
+                            bulletFired = false;
+                        }
+                    }
+                    
+                    alienY += 1;
+                    alienX += alienDx;
+                    if (alienX + alienWidth > canvas.width || alienX < 0) {
+                        alienDx = -alienDx;
+                    }
+                    drawAlien();
+
+                    // Collision detection (very basic)
+                    if (bulletFired && // Only check collision if bullet is fired
+                        bulletX < alienX + alienWidth &&
+                        bulletX + turretWidth > alienX &&
+                        bulletY < alienY + alienHeight &&
+                        bulletY + turretHeight > alienY) {
+                        // Alien hit!
+                        score++;
+                        resetAlien();
+                        bulletFired = false;
+                    }
+
+                    // Game over if alien reaches bottom
+                    if (alienY > canvas.height) {
+                        gameOver = true;
+                        resetGame();
+                    }
+                } else {
+                    drawGameOver();
+                }
+
+                requestAnimationFrame(update);
+            }
+            
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                const maxWidth = container.clientWidth;
+                const scale = maxWidth / canvas.width;
+                
+                if (scale < 1) {
+                    canvas.style.width = (canvas.width * scale) + 'px';
+                    canvas.style.height = (canvas.height * scale) + 'px';
+                } else {
+                    canvas.style.width = '';
+                    canvas.style.height = '';
+                }
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            update();
+        </script>
+    </div>
+</body>
+</html>
