@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Alien vs Tank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #1a1a2e;
-            color: #e6e6e6;
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: radial-gradient(circle at 15% 20%, rgba(127, 180, 255, 0.18), transparent 45%), radial-gradient(circle at 85% 25%, rgba(255, 165, 123, 0.2), transparent 55%), #0f1533;
+            color: #f0f4ff;
             text-align: center;
             padding: 20px;
             min-height: 100vh;
             margin: 0;
             position: relative;
             overflow-x: hidden;
+            line-height: 1.7;
         }
 
         .stars {
@@ -20,7 +25,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 200vh; /* Double the height to ensure seamless loop */
             pointer-events: none;
             background-image: 
                 radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
@@ -29,9 +34,19 @@
                 radial-gradient(2px 2px at 200px 20px, #ffffff, transparent),
                 radial-gradient(2px 2px at 300px 250px, #ffffff, transparent),
                 radial-gradient(2px 2px at 400px 150px, #ffffff, transparent),
-                radial-gradient(2px 2px at 450px 50px, #ffffff, transparent);
-            background-repeat: repeat;
-            animation: stars 100s linear infinite;
+                radial-gradient(2px 2px at 450px 50px, #ffffff, transparent),
+                /* Second set of stars for seamless loop */
+                radial-gradient(2px 2px at 120px 230px, #ffffff, transparent),
+                radial-gradient(2px 2px at 140px 270px, #ffffff, transparent),
+                radial-gradient(2px 2px at 250px 360px, #ffffff, transparent),
+                radial-gradient(2px 2px at 500px 220px, #ffffff, transparent),
+                radial-gradient(2px 2px at 600px 450px, #ffffff, transparent),
+                radial-gradient(2px 2px at 700px 350px, #ffffff, transparent),
+                radial-gradient(2px 2px at 750px 250px, #ffffff, transparent);
+            background-size: 100% 100vh; /* Make background repeat every viewport height */
+            background-repeat: repeat-y;
+            animation: stars 20s linear infinite;
+            opacity: 0.35;
         }
 
         @keyframes stars {
@@ -39,65 +54,126 @@
                 transform: translateY(0);
             }
             to {
-                transform: translateY(-100vh);
+                transform: translateY(-100vh); /* Only move one viewport height */
             }
         }
 
         .container {
+            position: relative;
             max-width: 800px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(31, 46, 88, 0.8), rgba(21, 24, 54, 0.92));
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 45px rgba(9, 13, 28, 0.55);
+            padding: 36px 40px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 2;
+            text-align: left;
         }
 
         canvas {
             display: block;
             margin: 20px auto;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 128, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(8, 12, 32, 0.6);
             background: #000;
-            position: relative;
-            z-index: 3;
+            max-width: 100%;
         }
 
         h1 {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(0, 128, 255, 0.5);
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 2;
+            color: #f8f9ff;
+            text-shadow: 0 0 25px rgba(127, 180, 255, 0.55);
+            margin-bottom: 24px;
+            font-family: 'Orbitron', 'Roboto', sans-serif;
+            letter-spacing: 0.18em;
+            text-align: center;
         }
 
         p {
-            line-height: 1.6;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
+            line-height: 1.85;
+            margin: 0 auto 18px;
+            color: rgba(240, 244, 255, 0.9);
+            max-width: 640px;
+            letter-spacing: 0.01em;
         }
 
         a {
-            color: #4da6ff;
+            color: #80b7ff;
             text-decoration: none;
             transition: color 0.3s ease;
-            position: relative;
-            z-index: 2;
         }
 
         a:hover {
-            color: #80bfff;
+            color: #a5caff;
             text-decoration: underline;
+        }
+
+        .commentary {
+            color: #ffd27f;
+            background: rgba(255, 210, 127, 0.12);
+            border-left: 3px solid rgba(255, 210, 127, 0.45);
+            padding: 0 0.5em;
+            border-radius: 4px;
+            text-shadow: 0 0 10px rgba(255, 210, 127, 0.4);
         }
 
         i {
             font-style: italic;
             opacity: 0.9;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ffd27f, #ff9f6f);
+            color: #1d1628;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            box-shadow: 0 12px 28px rgba(255, 159, 111, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .back-link:hover {
+            color: #1d1628;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(255, 159, 111, 0.45);
+        }
+
+        .meta-note {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            color: rgba(173, 191, 255, 0.7);
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 28px 22px;
+            }
+
+            h1 {
+                letter-spacing: 0.12em;
+                font-size: 1.6rem;
+            }
+
+            p {
+                font-size: 0.95rem;
+            }
+
+            .back-link {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -105,6 +181,7 @@
     <div class="stars"></div>
     <div class="container">
         <h1>Alien Invasion AI</h1>
+        <p class="meta-note">First generation, BASIC ~1982</p>
         <p>I can still picture it clearly: the bottom shelf of our old bookcase, crammed with my father's dog-eared science fiction paperbacks. The spines were faded with titles like I, Robot and Childhood's End, promising worlds beyond my imagination. It was in those pages that I first encountered the idea of artificial intelligence, and it wasn't long before, without realising it, I tried to create my own.</p>
         <p>Armed with nothing but a pencil and a school copybook, at the back of the class ignoring the teacher I set out to code my game:  a fearsome alien flying saucer for a space invaders game. The goal was to unlock the secrets of programming, but the reality was... a bit disappointing :(. My alien could only zig and zag in response to the player's movements.</p>
         <p>This is a fair representation of what that <abbr title="(Beginner All-purpose Symbolic Instruction Code)">BASIC</abbr> code was, this time auto generated by a very simple AI prompt, I hope you enjoy it! </p>
@@ -267,6 +344,10 @@
         <p>By reproducing this first step with a LLM prompt, I'm exploring whats now possible with this new wave of AI technology. Here is an <a href="gai-alien.html">enhanced version </a> of the same app. It's the same simple thing as before, but whats happened is that its now easier to add features that would have been too complex for a child to even consider writing code for.</p>
 
         <p> In the same way that B.A.S.I.C., enabled me to code my game where it would have been impossible for me to use Assembly Language. LLM tech enables us all in the same way, across the board. </p>
+
+        <p style="text-align: center;">
+            <a class="back-link" href="gai-alien.html">The next generation ⟶</a>
+        </p>
      
 
     </div>
