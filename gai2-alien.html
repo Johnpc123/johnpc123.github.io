@@ -207,6 +207,10 @@
         <h1>Generative AI Alien 2</h1>
         <p class="meta-note">Third generation</p>
 
+        <canvas id="gameCanvas" width="640" height="400"></canvas>
+
+        <p><button id="resetMemory">Reset alien memory</button></p>
+
         <p>Third time's the charm. The first version recreated my childhood BASIC game, the second claimed "intelligent difficulty scaling" <i class="commentary">(it scaled like a sloth climbs — imperceptibly)</i>. This one is a reimagining rather than an upgrade: the alien finally fights back, and the adapts-to-your-performance claim is true this time <i class="commentary">(the AI read its own code review and felt ashamed)</i>.</p>
 
         <p>The alien now has an arsenal — aimed plasma bolts, a dodge-dash for when your aim gets good, and a rotation of movement patterns it picks based on which ones you've been slaughtering it with <i class="commentary">(it's a weighted lookup table — the alien has the brain of a spreadsheet, but an honest spreadsheet)</i>. Patterns that die fast get chosen less often, and the weights persist between visits <i class="commentary">(it remembers you. Sleep well)</i>.</p>
@@ -217,10 +221,6 @@
             <a class="back-link" href="gai-alien.html">⟵ Previous generation</a>
             <a class="back-link" href="ai-alien.html">⟵ Back to the original</a>
         </p>
-
-        <canvas id="gameCanvas" width="640" height="400"></canvas>
-
-        <p><button id="resetMemory">Reset alien memory</button></p>
 
         <p>Even the sound is real — no more commented-out .wav files; every pew is synthesized live in your browser <i class="commentary">(the missing audio files have been replaced by math)</i>. Every fifth wave brings a boss UFO with a health bar and a spread shot <i class="commentary">(still just an ellipse with anger issues)</i>. If the alien's learned behaviour gets too cheeky, the button above wipes its memory along with your high score <i class="commentary">(the humane option — it never feels a thing)</i>.</p>
 
