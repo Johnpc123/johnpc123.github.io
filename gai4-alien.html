@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Generative AI Alien 4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: radial-gradient(circle at 15% 20%, rgba(127, 180, 255, 0.18), transparent 45%), radial-gradient(circle at 85% 25%, rgba(255, 165, 123, 0.2), transparent 55%), #0f1533;
+            color: #f0f4ff;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200vh;
+            pointer-events: none;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
+                radial-gradient(2px 2px at 50px 160px, #ffffff, transparent),
+                radial-gradient(2px 2px at 200px 20px, #ffffff, transparent),
+                radial-gradient(2px 2px at 300px 250px, #ffffff, transparent),
+                radial-gradient(2px 2px at 400px 150px, #ffffff, transparent),
+                radial-gradient(2px 2px at 450px 50px, #ffffff, transparent),
+                radial-gradient(2px 2px at 120px 230px, #ffffff, transparent),
+                radial-gradient(2px 2px at 140px 270px, #ffffff, transparent),
+                radial-gradient(2px 2px at 250px 360px, #ffffff, transparent),
+                radial-gradient(2px 2px at 500px 220px, #ffffff, transparent),
+                radial-gradient(2px 2px at 600px 450px, #ffffff, transparent),
+                radial-gradient(2px 2px at 700px 350px, #ffffff, transparent),
+                radial-gradient(2px 2px at 750px 250px, #ffffff, transparent);
+            background-size: 100% 100vh;
+            background-repeat: repeat-y;
+            animation: stars 20s linear infinite;
+            opacity: 0.35;
+        }
+
+        @keyframes stars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); }
+        }
+
+        .container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(31, 46, 88, 0.8), rgba(21, 24, 54, 0.92));
+            border-radius: 12px;
+            box-shadow: 0 20px 45px rgba(9, 13, 28, 0.55);
+            padding: 36px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+
+        h1 {
+            color: #f8f9ff;
+            text-shadow: 0 0 25px rgba(127, 180, 255, 0.55);
+            margin-bottom: 24px;
+            font-family: 'Orbitron', 'Roboto', sans-serif;
+            letter-spacing: 0.18em;
+            text-align: center;
+        }
+
+        p {
+            line-height: 1.85;
+            margin: 0 auto 18px;
+            color: rgba(240, 244, 255, 0.9);
+            max-width: 640px;
+            letter-spacing: 0.01em;
+        }
+
+        a {
+            color: #80b7ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #a5caff;
+            text-decoration: underline;
+        }
+
+        .commentary {
+            color: #ffd27f;
+            background: rgba(255, 210, 127, 0.12);
+            border-left: 3px solid rgba(255, 210, 127, 0.45);
+            padding: 0 0.5em;
+            border-radius: 4px;
+            text-shadow: 0 0 10px rgba(255, 210, 127, 0.4);
+        }
+
+        i { font-style: italic; opacity: 0.9; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ffd27f, #ff9f6f);
+            color: #1d1628;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            box-shadow: 0 12px 28px rgba(255, 159, 111, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .back-link:hover {
+            color: #1d1628;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(255, 159, 111, 0.45);
+        }
+
+        .meta-note {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            color: rgba(173, 191, 255, 0.7);
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        /* ---------- game chrome ---------- */
+        .game-wrap {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(8, 12, 32, 0.6);
+            overflow: hidden;
+            margin: 20px 0;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .game-wrap canvas { display: block; }
+
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Orbitron', monospace;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            color: #e6e6e6;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+        }
+
+        .hud .hi { color: #4da6ff; }
+        .hud .mult { color: #facc15; }
+
+        .hud-bottom {
+            position: absolute;
+            bottom: 10px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .pips { display: flex; gap: 5px; }
+        .pip { width: 16px; height: 10px; background: #4ade80; border-radius: 2px; }
+        .pip.mag { width: 8px; background: #ef4444; }
+        .pip.mag.empty { background: #442222; }
+
+        #bossBar {
+            position: absolute;
+            width: 90px;
+            height: 5px;
+            background: #333;
+            border-radius: 3px;
+            display: none;
+            pointer-events: none;
+        }
+
+        #bossBar > div {
+            height: 100%;
+            background: #ef4444;
+            border-radius: 3px;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(5, 6, 15, 0.55);
+            backdrop-filter: blur(2px);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .overlay h2 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.15em;
+            margin: 0;
+            color: #c084fc;
+            text-shadow: 0 0 20px rgba(192, 132, 252, 0.6);
+        }
+
+        .overlay .sub { color: #94a3b8; font-size: 0.95rem; }
+        .overlay .dim { color: #64748b; font-size: 0.85rem; }
+        .overlay .cta { color: #4da6ff; font-family: 'Orbitron', sans-serif; letter-spacing: 0.1em; }
+        .overlay .over { color: #ff3333; }
+        .overlay .gold { color: #facc15; font-weight: bold; }
+
+        #resetMemory {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(240, 244, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-family: 'Roboto', Arial, sans-serif;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+        }
+
+        #resetMemory:hover { color: #fff; border-color: rgba(255, 255, 255, 0.45); }
+
+        @media (max-width: 640px) {
+            body { padding: 16px; }
+            .container { padding: 28px 22px; }
+            h1 { letter-spacing: 0.12em; font-size: 1.6rem; }
+            p { font-size: 0.95rem; }
+            .back-link { width: 100%; justify-content: center; }
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <h1>Generative AI Alien 4</h1>
+        <p class="meta-note">Fourth generation</p>
+
+        <div class="game-wrap" id="gameWrap">
+            <div class="hud">
+                <div>SCORE <span id="hudScore">0</span><br><span class="hi">HI <span id="hudHi">0</span></span></div>
+                <div style="text-align:right">WAVE <span id="hudWave">1</span><br><span class="mult" id="hudMult">x1</span> <span id="hudAcc">0%</span></div>
+            </div>
+            <div class="hud-bottom">
+                <div class="pips" id="hudLives"></div>
+                <div class="pips" id="hudMag"></div>
+            </div>
+            <div id="bossBar"><div></div></div>
+            <div class="overlay" id="overlay"></div>
+        </div>
+        <p style="text-align: center;"><button id="resetMemory">Reset alien memory</button></p>
+        <p style="text-align: center;">
+            <a class="back-link" href="gai2-alien.html">⟵ Previous generation</a>
+            <a class="back-link" href="ai-alien.html">⟵ Back to the original</a><br>
+            <a href="alien-index.html">all four generations</a>
+        </p>
+
+        <p>Four generations in, and the game finally found a third dimension. The same duel — tank below, alien above — but the UFO now approaches from deep space instead of sliding politely down a flat screen <i class="commentary">(a flatlander no longer)</i>. Its bolts come at you with real depth, and yours travel into the scene as tracers <i class="commentary">(your high school trigonometry, vindicated at last)</i>.</p>
+
+        <p>Everything the previous generation learned survives the jump: the movement patterns, the dodge-dash, the weighted lookup table that remembers which tactics get it killed <i class="commentary">(it learned in three dimensions and still gets hit)</i>. Waves escalate, every fifth brings a boss with a health bar, and the weights persist between visits <i class="commentary">(it remembers you in 3D now — that's not better)</i>.</p>
+
+        <p>Rendering is WebGL via three.js, loaded from a CDN — the one concession this page makes to the series' single-file rule <i class="commentary">(writing raw WebGL would be very impressive, which is exactly why nobody does it)</i>. Sound is still synthesized live, the score is still visible <i class="commentary">(a tradition the second generation courageously abandoned)</i>, and the tank still can't leave the screen <i class="commentary">(some lessons stick)</i>.</p>
+
+        <p>The child with the pencil and the copybook drew this game in two dimensions because that was all the squared paper allowed. Somewhere in the margin, this is the one he was actually imagining.</p>
+
+        <script type="importmap">
+            { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.min.js" } }
+        </script>
+        <script type="module">
+            import * as THREE from 'three';
+
+            // ---------- persistence ----------
+            const store = {
+                load() { try { return JSON.parse(localStorage.getItem("gai4alien")) || {}; } catch (e) { return {}; } },
+                save(d) { try { localStorage.setItem("gai4alien", JSON.stringify(d)); } catch (e) {} }
+            };
+            const saved = store.load();
+            let highScore = saved.highScore || 0;
+            let muted = saved.muted || false;
+            const defaultWeights = { zigzag: 1, sine: 1, hunter: 1, dasher: 1 };
+            let patternWeights = Object.assign({}, defaultWeights, saved.patternWeights || {});
+            function persist() { store.save({ highScore, patternWeights, muted }); }
+
+            // ---------- audio ----------
+            let audioCtx = null;
+            function ac() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                return audioCtx;
+            }
+            function tone(fa, fb, dur, type, vol) {
+                if (muted) return;
+                const c = ac(), o = c.createOscillator(), g = c.createGain();
+                o.type = type;
+                o.frequency.setValueAtTime(fa, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(fb, c.currentTime + dur);
+                g.gain.setValueAtTime(vol, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + dur);
+            }
+            function noiseBurst(dur, vol) {
+                if (muted) return;
+                const c = ac(), len = c.sampleRate * dur;
+                const buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+                for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+                const s = c.createBufferSource(), g = c.createGain();
+                s.buffer = buf; g.gain.value = vol;
+                s.connect(g); g.connect(c.destination); s.start();
+            }
+            const sfx = {
+                shoot:    () => tone(700, 180, 0.08, "square", 0.12),
+                alienHit: () => { tone(320, 60, 0.15, "sawtooth", 0.15); noiseBurst(0.15, 0.12); },
+                tankHit:  () => { tone(140, 40, 0.4, "sawtooth", 0.2); noiseBurst(0.45, 0.2); },
+                bolt:     () => tone(300, 500, 0.1, "triangle", 0.08),
+                wave:     () => { tone(440, 440, 0.08, "square", 0.1); setTimeout(() => tone(660, 660, 0.1, "square", 0.1), 100); },
+                boss:     () => { tone(110, 110, 0.25, "sawtooth", 0.15); setTimeout(() => tone(110, 110, 0.25, "sawtooth", 0.15), 300); }
+            };
+
+            // ---------- three.js scene ----------
+            const wrap = document.getElementById("gameWrap");
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x05060f, 28, 95);
+            scene.background = new THREE.Color(0x05060f);
+
+            const camera = new THREE.PerspectiveCamera(55, 16 / 9, 0.1, 200);
+            camera.position.set(0, 6.8, 18.5);
+            camera.lookAt(0, 2.2, -12);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            wrap.insertBefore(renderer.domElement, wrap.firstChild);
+
+            function resize() {
+                const w = wrap.clientWidth, h = Math.min(Math.max(w * 0.62, 280), 480);
+                renderer.setSize(w, h);
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+            }
+            window.addEventListener("resize", resize);
+            resize();
+
+            scene.add(new THREE.AmbientLight(0x8899cc, 0.55));
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            keyLight.position.set(5, 12, 10);
+            scene.add(keyLight);
+
+            // retro grid ground
+            const grid = new THREE.GridHelper(220, 80, 0x1a3a6f, 0x0d1a33);
+            grid.position.z = -40;
+            scene.add(grid);
+
+            // starfield dome
+            {
+                const g = new THREE.BufferGeometry();
+                const pos = new Float32Array(700 * 3);
+                for (let i = 0; i < 700; i++) {
+                    pos[i * 3] = (Math.random() - 0.5) * 240;
+                    pos[i * 3 + 1] = Math.random() * 90 + 2;
+                    pos[i * 3 + 2] = -Math.random() * 160 + 20;
+                }
+                g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+                scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 0.28, fog: false })));
+            }
+
+            // ---------- entities ----------
+            const TANK_Z = 9, TANK_XMAX = 9;
+            const tankGroup = new THREE.Group();
+            {
+                const hull = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.4, 0.7, 1.7),
+                    new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.6 }));
+                hull.position.y = 0.55;
+                const turret = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.1, 0.5, 1.0),
+                    new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.5 }));
+                turret.position.set(0, 1.15, 0.15);
+                const barrel = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.09, 0.09, 1.4, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x9be7b8 }));
+                barrel.rotation.x = Math.PI / 2;
+                barrel.position.set(0, 1.2, -0.75);
+                const treadL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 1.9), new THREE.MeshStandardMaterial({ color: 0x14532d }));
+                treadL.position.set(-1.1, 0.25, 0);
+                const treadR = treadL.clone(); treadR.position.x = 1.1;
+                tankGroup.add(hull, turret, barrel, treadL, treadR);
+                tankGroup.position.set(0, 0, TANK_Z);
+            }
+            scene.add(tankGroup);
+
+            function makeUfo(boss) {
+                const grp = new THREE.Group();
+                const scale = boss ? 1.9 : 1;
+                const disc = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.15 * scale, 24, 12),
+                    new THREE.MeshStandardMaterial({ color: boss ? 0xc026d3 : 0x9333ea, roughness: 0.4, metalness: 0.4 }));
+                disc.scale.y = 0.32;
+                const dome = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.55 * scale, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+                    new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2, metalness: 0.6 }));
+                dome.position.y = 0.25 * scale;
+                const rim = new THREE.Mesh(
+                    new THREE.TorusGeometry(1.15 * scale, 0.07 * scale, 8, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+                rim.rotation.x = Math.PI / 2;
+                grp.add(disc, dome, rim);
+                grp.userData.scale = scale;
+                return grp;
+            }
+
+            const BOUNDS_X = 10.5;
+            let alien = null;
+            let bullets = [];   // {mesh, x,y,z, dodgeChecked}
+            let bolts = [];     // {mesh, vx,vy,vz}
+            let bursts = [];    // {points, vel[], life}
+
+            const bulletGeo = new THREE.CylinderGeometry(0.07, 0.07, 1.3, 6);
+            const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff3355 });
+            const boltGeo = new THREE.SphereGeometry(0.22, 10, 8);
+            const boltMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+
+            function pickPattern() {
+                let total = 0;
+                for (const k in patternWeights) total += Math.max(0, patternWeights[k]);
+                let r = Math.random() * total;
+                for (const k in patternWeights) {
+                    r -= Math.max(0, patternWeights[k]);
+                    if (r <= 0) return k;
+                }
+                return "zigzag";
+            }
+
+            function spawnAlien() {
+                const boss = (wave % 5 === 0);
+                const grp = makeUfo(boss);
+                grp.position.set(0, boss ? 8 : 6.5, -46);
+                scene.add(grp);
+                alien = {
+                    grp, boss,
+                    w: 2.3 * grp.userData.scale, h: 0.9 * grp.userData.scale,
+                    hp: boss ? 5 : (wave >= 8 ? 2 : 1), maxHp: boss ? 5 : (wave >= 8 ? 2 : 1),
+                    pattern: boss ? "hunter" : pickPattern(),
+                    t: 0, spawnT: performance.now(),
+                    vx: (Math.random() < 0.5 ? -1 : 1) * (3 + wave * 0.5),
+                    baseY: boss ? 8 : 6.5,
+                    phase: Math.random() * Math.PI * 2,
+                    fireCd: 1.4 + Math.random() * 1.4,
+                    dodgeCd: 0, dashT: 0, dashDir: 0,
+                    approach: Math.min(3.2 + wave * 0.45, 9) * (boss ? 0.55 : 1)
+                };
+                if (boss) sfx.boss(); else sfx.wave();
+            }
+
+            function learnFromDeath() {
+                if (!alien || alien.boss) return;
+                const ttl = (performance.now() - alien.spawnT) / 1000;
+                const factor = Math.min(Math.max(0.55 + ttl * 0.09, 0.55), 1.1);
+                patternWeights[alien.pattern] = Math.min(Math.max(patternWeights[alien.pattern] * factor, 0.05), 4);
+                persist();
+            }
+            function learnFromBreach() {
+                if (!alien || alien.boss) return;
+                patternWeights[alien.pattern] = Math.min(patternWeights[alien.pattern] * 1.1, 4);
+                persist();
+            }
+
+            function burst(pos, color, n) {
+                const g = new THREE.BufferGeometry();
+                const p = new Float32Array(n * 3), vel = [];
+                for (let i = 0; i < n; i++) {
+                    p[i * 3] = pos.x; p[i * 3 + 1] = pos.y; p[i * 3 + 2] = pos.z;
+                    const a = Math.random() * Math.PI * 2, e = Math.random() * Math.PI - Math.PI / 2, s = 3 + Math.random() * 8;
+                    vel.push({ x: Math.cos(a) * Math.cos(e) * s, y: Math.sin(e) * s, z: Math.sin(a) * Math.cos(e) * s });
+                }
+                g.setAttribute("position", new THREE.BufferAttribute(p, 3));
+                const pts = new THREE.Points(g, new THREE.PointsMaterial({ color, size: 0.22, transparent: true }));
+                scene.add(pts);
+                bursts.push({ pts, vel, life: 0.7 });
+            }
+
+            // ---------- game state ----------
+            let state = "title";
+            let paused = false;
+            let score = 0, wave = 0, lives = 3;
+            let shots = 0, hits = 0, streak = 0;
+            let shake = 0, interludeT = 0;
+            let tankX = 0, tankVx = 0, invuln = 0;
+            let mag = 3, reloadT = 0;
+
+            const TANK_SPEED = 14, BULLET_SPEED = 42;
+            const keys = {};
+            let pointerX = null;
+
+            const overlay = document.getElementById("overlay");
+            const hudScore = document.getElementById("hudScore");
+            const hudHi = document.getElementById("hudHi");
+            const hudWave = document.getElementById("hudWave");
+            const hudAcc = document.getElementById("hudAcc");
+            const hudMult = document.getElementById("hudMult");
+            const hudLives = document.getElementById("hudLives");
+            const hudMag = document.getElementById("hudMag");
+            const bossBar = document.getElementById("bossBar");
+
+            function setOverlay(html) { overlay.style.display = html ? "flex" : "none"; overlay.innerHTML = html || ""; }
+
+            function refreshHud() {
+                hudScore.textContent = score;
+                hudHi.textContent = highScore;
+                hudWave.textContent = Math.max(wave, 1);
+                hudAcc.textContent = (shots ? Math.round(hits / shots * 100) : 0) + "%";
+                hudMult.textContent = "x" + Math.min(1 + Math.floor(streak / 3), 4);
+                hudLives.innerHTML = "";
+                for (let i = 0; i < lives; i++) hudLives.innerHTML += '<div class="pip"></div>';
+                hudMag.innerHTML = "";
+                for (let i = 0; i < 3; i++) hudMag.innerHTML += `<div class="pip mag${i < mag ? "" : " empty"}"></div>`;
+            }
+
+            function showTitle() {
+                state = "title";
+                setOverlay(`
+                    <h2>GENERATIVE AI ALIEN 4</h2>
+                    <div class="sub">The alien fights back — in three dimensions</div>
+                    <div class="dim">MOVE: A/D or S/D or arrows or mouse &nbsp;·&nbsp; FIRE: Space or click or tap</div>
+                    <div class="dim">P pause · M mute</div>
+                    <div class="cta">CLICK OR PRESS SPACE TO START</div>`);
+            }
+
+            function startGame() {
+                state = "playing"; paused = false;
+                score = 0; wave = 0; lives = 3; shots = 0; hits = 0; streak = 0;
+                tankX = 0; tankVx = 0; invuln = 0; mag = 3; reloadT = 0;
+                for (const b of bullets) scene.remove(b.mesh);
+                for (const b of bolts) scene.remove(b.mesh);
+                bullets = []; bolts = [];
+                if (alien) { scene.remove(alien.grp); alien = null; }
+                interludeT = 1.0;
+                setOverlay("");
+            }
+
+            function hitTank(breach) {
+                if (invuln > 0 && !breach) return;
+                lives--; streak = 0; shake = 0.4; invuln = 1.6;
+                burst(tankGroup.position, 0xff9944, 30);
+                sfx.tankHit();
+                for (const b of bolts) scene.remove(b.mesh);
+                bolts = [];
+                if (lives <= 0) {
+                    state = "gameover";
+                    if (score > highScore) highScore = score;
+                    persist();
+                    const acc = shots ? Math.round(hits / shots * 100) : 0;
+                    setOverlay(`
+                        <h2 class="over">GAME OVER</h2>
+                        <div>Score: ${score} · Accuracy: ${acc}%</div>
+                        <div class="gold">${score >= highScore && score > 0 ? "NEW HIGH SCORE!" : "High score: " + highScore}</div>
+                        <div class="cta">CLICK OR PRESS SPACE TO RESTART</div>`);
+                }
+            }
+
+            function fire() {
+                if (state !== "playing" || paused || mag <= 0) return;
+                mag--; shots++;
+                const m = new THREE.Mesh(bulletGeo, bulletMat);
+                const origin = new THREE.Vector3(tankX, 1.2, TANK_Z - 1.2);
+                let dir = new THREE.Vector3(0, 0.12, -1);
+                if (alien) {
+                    // aim at the UFO with a little lead on its approach
+                    const p = alien.grp.position;
+                    const t = p.distanceTo(origin) / BULLET_SPEED;
+                    const lead = p.clone();
+                    lead.x += (alien.pattern === "hunter" ? (tankX - p.x) : (alien.vx || 0)) * t * 0.5;
+                    lead.z += alien.approach * t * 0.5;
+                    dir = lead.sub(origin).normalize();
+                }
+                m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone());
+                m.position.copy(origin);
+                scene.add(m);
+                bullets.push({ mesh: m, vx: dir.x * BULLET_SPEED, vy: dir.y * BULLET_SPEED, vz: dir.z * BULLET_SPEED, dodgeChecked: false });
+                sfx.shoot();
+            }
+
+            function alienFire() {
+                const a = alien.grp.position;
+                const speed = 9 + wave * 0.6;
+                const lead = Math.min(0.4 + wave * 0.08, 0.95);
+                const fire = (spread) => {
+                    const tx = tankX + tankVx * 0.4 * lead, ty = 1, tz = TANK_Z;
+                    const dir = new THREE.Vector3(tx - a.x, ty - a.y, tz - a.z).normalize();
+                    if (spread) dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), spread);
+                    const m = new THREE.Mesh(boltGeo, boltMat);
+                    m.position.copy(a);
+                    scene.add(m);
+                    bolts.push({ mesh: m, vx: dir.x * speed, vy: dir.y * speed, vz: dir.z * speed });
+                };
+                if (alien.boss) { fire(-0.28); fire(0); fire(0.28); } else fire(0);
+                sfx.bolt();
+            }
+
+            function updateAlien(dt) {
+                const p = alien.grp.position;
+                alien.t += dt;
+                alien.dodgeCd -= dt;
+                const approach = alien.approach * dt;
+
+                if (alien.pattern === "zigzag") {
+                    p.x += alien.vx * dt;
+                    if (p.x < -BOUNDS_X || p.x > BOUNDS_X) { alien.vx = -alien.vx; p.x = Math.min(Math.max(p.x, -BOUNDS_X), BOUNDS_X); }
+                } else if (alien.pattern === "sine") {
+                    alien.phase += dt * (1.5 + wave * 0.1);
+                    p.x = Math.sin(alien.phase) * BOUNDS_X * 0.8;
+                } else if (alien.pattern === "hunter") {
+                    const max = (alien.boss ? 2.5 : 4) + wave * 0.3;
+                    p.x += Math.min(Math.max(tankX - p.x, -max), max) * dt * 1.6;
+                } else if (alien.pattern === "dasher") {
+                    alien.dashT -= dt;
+                    if (alien.dashT <= 0) { alien.dashT = 0.9 + Math.random() * 0.9; alien.dashDir = Math.random() < 0.5 ? -1 : 1; }
+                    p.x += alien.dashDir * ((alien.dashT % 0.9) < 0.35 ? 12 : 1.5) * dt;
+                }
+                p.x = Math.min(Math.max(p.x, -BOUNDS_X - 1), BOUNDS_X + 1);
+                p.z += approach;
+                p.y = alien.baseY + Math.sin(alien.t * 2.2) * 0.35;
+                alien.grp.rotation.y += dt * (alien.boss ? 0.6 : 1.2);
+
+                // dodge-dash when a tracer lines up on it
+                if (!alien.boss && alien.dodgeCd <= 0) {
+                    const acc = shots ? hits / shots : 0;
+                    for (const b of bullets) {
+                        const bp = b.mesh.position;
+                        if (!b.dodgeChecked && Math.abs(bp.x - p.x) < alien.w * 0.8 && bp.z - p.z < 9 && bp.z > p.z) {
+                            b.dodgeChecked = true;
+                            if (Math.random() < Math.min(0.15 + acc * 1.1, 0.8)) {
+                                p.x += (bp.x < p.x ? 1 : -1) * (2.5 + Math.random() * 1.5);
+                                alien.dodgeCd = 1.8;
+                            }
+                        }
+                    }
+                }
+
+                alien.fireCd -= dt;
+                if (alien.fireCd <= 0 && p.z > -30) {
+                    alien.fireCd = Math.max(2.4 - wave * 0.15, 0.9) * (0.7 + Math.random() * 0.6);
+                    alienFire();
+                }
+
+                if (p.z >= TANK_Z - 1.5) {
+                    learnFromBreach();
+                    hitTank(true);
+                    scene.remove(alien.grp);
+                    alien = null;
+                    interludeT = 0.9;
+                }
+            }
+
+            // ---------- input ----------
+            function steer() {
+                if (state !== "playing") { startGame(); return; }
+                fire();
+            }
+            document.addEventListener("keydown", e => {
+                keys[e.code] = true;
+                if (e.code === "Space") { e.preventDefault(); steer(); }
+                if (e.code === "Enter" && state !== "playing") startGame();
+                if (e.code === "KeyP" && state === "playing") paused = !paused;
+                if (e.code === "KeyM") { muted = !muted; persist(); }
+            });
+            document.addEventListener("keyup", e => { keys[e.code] = false; });
+
+            function pointerPos(e) {
+                const r = wrap.getBoundingClientRect();
+                const cx = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - r.left;
+                pointerX = ((cx / r.width) - 0.5) * TANK_XMAX * 2.4;
+            }
+            wrap.addEventListener("mousemove", pointerPos);
+            wrap.addEventListener("mouseleave", () => { pointerX = null; });
+            wrap.addEventListener("click", () => { ac(); steer(); });
+            wrap.addEventListener("touchstart", e => { e.preventDefault(); ac(); pointerPos(e); steer(); });
+            wrap.addEventListener("touchmove", e => { e.preventDefault(); pointerPos(e); });
+            wrap.addEventListener("touchend", e => { e.preventDefault(); pointerX = null; });
+
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && state === "playing") paused = true;
+            });
+            document.getElementById("resetMemory").addEventListener("click", () => {
+                patternWeights = Object.assign({}, defaultWeights);
+                highScore = 0;
+                persist();
+                refreshHud();
+            });
+
+            // ---------- main loop ----------
+            const proj = new THREE.Vector3();
+            let lastT = performance.now();
+
+            function frame(now) {
+                requestAnimationFrame(frame);
+                const dt = Math.min((now - lastT) / 1000, 0.05);
+                lastT = now;
+
+                if (state === "playing" && !paused) {
+                    // tank
+                    let dir = 0;
+                    if (keys["KeyA"] || keys["KeyS"] || keys["ArrowLeft"]) dir -= 1;
+                    if (keys["KeyD"] || keys["ArrowRight"]) dir += 1;
+                    if (dir !== 0) {
+                        tankVx = Math.min(Math.max(tankVx + dir * 90 * dt, -TANK_SPEED), TANK_SPEED);
+                    } else {
+                        tankVx *= Math.pow(0.001, dt);
+                        if (Math.abs(tankVx) < 0.05) tankVx = 0;
+                    }
+                    tankX += tankVx * dt;
+                    if (pointerX !== null && dir === 0) tankX += (pointerX - tankX) * Math.min(1, dt * 10);
+                    tankX = Math.min(Math.max(tankX, -TANK_XMAX), TANK_XMAX);
+                    invuln -= dt;
+                    tankGroup.position.x = tankX;
+                    tankGroup.visible = !(invuln > 0 && Math.floor(invuln * 10) % 2 === 0);
+
+                    if (mag < 3) { reloadT += dt; if (reloadT >= 0.7) { reloadT = 0; mag++; } }
+
+                    // bullets
+                    for (let i = bullets.length - 1; i >= 0; i--) {
+                        const b = bullets[i];
+                        b.mesh.position.x += b.vx * dt;
+                        b.mesh.position.y += b.vy * dt;
+                        b.mesh.position.z += b.vz * dt;
+                        if (b.mesh.position.z < -70 || b.mesh.position.y > 60) { scene.remove(b.mesh); bullets.splice(i, 1); streak = 0; }
+                    }
+
+                    // bolts
+                    for (let i = bolts.length - 1; i >= 0; i--) {
+                        const b = bolts[i];
+                        b.mesh.position.x += b.vx * dt;
+                        b.mesh.position.y += b.vy * dt;
+                        b.mesh.position.z += b.vz * dt;
+                        const p = b.mesh.position;
+                        if (p.z > TANK_Z + 12 || p.y < -2 || Math.abs(p.x) > 30) { scene.remove(b.mesh); bolts.splice(i, 1); continue; }
+                        if (invuln <= 0 && Math.abs(p.x - tankX) < 1.4 && Math.abs(p.z - TANK_Z) < 1.2 && p.y < 1.8) {
+                            scene.remove(b.mesh); bolts.splice(i, 1); hitTank(false);
+                            break;
+                        }
+                    }
+
+                    // waves
+                    if (!alien) {
+                        interludeT -= dt;
+                        if (interludeT <= 0) { wave++; spawnAlien(); interludeT = 0.8; }
+                    } else {
+                        updateAlien(dt);
+                        if (alien) {
+                            // bullet vs alien
+                            const p = alien.grp.position;
+                            for (let i = bullets.length - 1; i >= 0; i--) {
+                                const bp = bullets[i].mesh.position;
+                                if (bp.distanceTo(p) < alien.w * 0.55 + 0.4) {
+                                    scene.remove(bullets[i].mesh); bullets.splice(i, 1);
+                                    alien.hp--;
+                                    if (alien.hp <= 0) {
+                                        hits++; streak++;
+                                        const mult = Math.min(1 + Math.floor(streak / 3), 4);
+                                        score += (alien.boss ? 500 : 100) * mult;
+                                        burst(p, alien.boss ? 0xd946ef : 0xa855f7, alien.boss ? 50 : 25);
+                                        if (alien.boss) shake = 0.3;
+                                        sfx.alienHit();
+                                        learnFromDeath();
+                                        scene.remove(alien.grp); alien = null;
+                                        interludeT = 0.8;
+                                    } else {
+                                        burst(bp, 0xc4b5fd, 8);
+                                        tone(400, 200, 0.06, "square", 0.08);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // particles
+                    for (let i = bursts.length - 1; i >= 0; i--) {
+                        const b = bursts[i];
+                        b.life -= dt;
+                        if (b.life <= 0) { scene.remove(b.pts); b.pts.geometry.dispose(); bursts.splice(i, 1); continue; }
+                        const pos = b.pts.geometry.attributes.position.array;
+                        for (let j = 0; j < b.vel.length; j++) {
+                            pos[j * 3] += b.vel[j].x * dt;
+                            pos[j * 3 + 1] += b.vel[j].y * dt;
+                            pos[j * 3 + 2] += b.vel[j].z * dt;
+                        }
+                        b.pts.geometry.attributes.position.needsUpdate = true;
+                        b.pts.material.opacity = Math.min(1, b.life * 2);
+                    }
+
+                    // boss bar follows the boss
+                    if (alien && alien.boss) {
+                        proj.copy(alien.grp.position); proj.y += 2.2; proj.project(camera);
+                        bossBar.style.display = "block";
+                        bossBar.style.left = ((proj.x * 0.5 + 0.5) * wrap.clientWidth - 45) + "px";
+                        bossBar.style.top = ((-proj.y * 0.5 + 0.5) * wrap.clientHeight - 12) + "px";
+                        bossBar.firstElementChild.style.width = (alien.hp / alien.maxHp * 100) + "%";
+                    } else {
+                        bossBar.style.display = "none";
+                    }
+
+                    if (paused) setOverlay('<h2>PAUSED</h2>');
+                    else if (state === "playing") setOverlay("");
+                    refreshHud();
+                }
+
+                // camera shake + subtle follow
+                if (shake > 0) shake -= dt;
+                camera.position.x = tankX * 0.12 + (Math.random() - 0.5) * shake * 0.8;
+                camera.position.y = 6.8 + (Math.random() - 0.5) * shake * 0.8;
+                camera.lookAt(tankX * 0.1, 2.2, -12);
+
+                renderer.render(scene, camera);
+            }
+
+            refreshHud();
+            showTitle();
+            requestAnimationFrame(frame);
+        </script>
+    </div>
+</body>
+</html>
